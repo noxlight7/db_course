@@ -26,4 +26,5 @@ urlpatterns = [
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     # User registration endpoint
     path('api/users/', include('users.urls')),
+    path('api/adventures/', include('adventures.urls')),
 ]

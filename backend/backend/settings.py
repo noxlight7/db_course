@@ -34,11 +34,13 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.postgres',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'adventures',
     'users',
     'corsheaders',
 ]
@@ -154,3 +156,12 @@ SIMPLE_JWT = {
 # Allow all CORS origins for development; restrict in production using ALLOWED_ORIGINS env var.
 CORS_ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
 CORS_ALLOW_CREDENTIALS = True
+
+# LLM configuration (local or API-backed).
+LLM_PROVIDER = os.getenv('LLM_PROVIDER', 'local')
+LLM_MODEL = os.getenv('LLM_MODEL', 'local-echo')
+LLM_BASE_URL = os.getenv('LLM_BASE_URL', '')
+LLM_API_KEY = os.getenv('LLM_API_KEY', '')
+LLM_TEMPERATURE = float(os.getenv('LLM_TEMPERATURE', '0.7'))
+LLM_MAX_TOKENS = int(os.getenv('LLM_MAX_TOKENS', '512'))
+LLM_TIMEOUT_SECONDS = float(os.getenv('LLM_TIMEOUT_SECONDS', '30'))

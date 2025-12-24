@@ -15,6 +15,10 @@ class User(AbstractUser):
 
     email = models.EmailField(unique=True)
     credits = models.PositiveIntegerField(default=0, help_text="Number of credits available to the user.")
+    is_admin = models.BooleanField(
+        default=False,
+        help_text="Designates whether the user has application-level admin access.",
+    )
 
     def __str__(self) -> str:
         return self.username

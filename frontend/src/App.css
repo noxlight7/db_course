@@ -44,6 +44,293 @@ body, html {
   text-align: center;
 }
 
+.templates-page {
+  text-align: left;
+}
+
+.templates-section {
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.templates-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.templates-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.file-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.file-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.template-card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.template-card h4 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.template-card p {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: #444;
+}
+
+.template-meta {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.template-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.templates-empty {
+  color: #666;
+}
+
+.primary-button {
+  background: #282c34;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.primary-button:hover {
+  background: #1f232a;
+}
+
+.secondary-button {
+  background: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.secondary-button:hover {
+  background: #e2e2e2;
+}
+
+.adventure-editor {
+  text-align: left;
+}
+
+.editor-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.editor-subtitle {
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.tab-button {
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 6px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+}
+
+.tab-button.active {
+  background: #282c34;
+  color: #fff;
+  border-color: #282c34;
+}
+
+.tab-content {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.editor-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.editor-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.editor-subsection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border-top: 1px solid #e6e6e6;
+  padding-top: 1.5rem;
+}
+
+.editor-subsection h3 {
+  margin: 0;
+}
+
+.editor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.editor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.editor-form input,
+.editor-form textarea,
+.editor-form select {
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.hero-setup {
+  text-align: left;
+}
+
+.game-page {
+  display: grid;
+  grid-template-columns: minmax(220px, 260px) 1fr;
+  gap: 1.5rem;
+}
+
+.game-sidebar {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.character-card {
+  border-bottom: 1px solid #e6e6e6;
+  padding: 0.5rem 0;
+}
+
+.character-card:last-child {
+  border-bottom: none;
+}
+
+.game-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.history-panel {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 1rem;
+  min-height: 320px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow-y: auto;
+}
+
+.history-entry {
+  margin-bottom: 1rem;
+}
+
+.history-role {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: #777;
+  margin-bottom: 0.25rem;
+}
+
+.history-content {
+  white-space: pre-wrap;
+}
+
+.prompt-form textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+@media (max-width: 900px) {
+  .game-page {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Modal styles */
 .modal-overlay {
   position: fixed;
@@ -65,6 +352,11 @@ body, html {
   width: 320px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   position: relative;
+}
+
+.adventure-modal {
+  width: 420px;
+  max-width: 90vw;
 }
 
 .modal-close {
@@ -99,6 +391,26 @@ body, html {
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1rem;
+}
+
+.modal-content textarea {
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modal-actions .submit-button {
+  margin-top: 0;
 }
 
 .submit-button {
