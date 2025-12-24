@@ -10,6 +10,8 @@ from __future__ import annotations
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .serializers import RegisterSerializer, UserSerializer
 from django.contrib.auth import get_user_model
@@ -41,3 +43,19 @@ class CurrentUserView(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class EmailOrUsernameTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """Allow login by username or email in the same field."""
+
+    def validate(self, attrs):
+        identifier = (attrs.get(self.username_field) or "").strip()
+        if "@" in identifier:
+            user = User.objects.filter(email__iexact=identifier).only(self.username_field).first()
+            if user:
+                attrs[self.username_field] = getattr(user, self.username_field)
+        return super().validate(attrs)
+
+
+class EmailOrUsernameTokenObtainPairView(TokenObtainPairView):
+    serializer_class = EmailOrUsernameTokenObtainPairSerializer

@@ -13,10 +13,21 @@ import TemplatesPage from './pages/TemplatesPage';
 // REACT_APP_API_URL in your environment (see .env.example).
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
+const getInitialTheme = () => {
+  if (typeof window === 'undefined') return 'light';
+  const storedTheme = localStorage.getItem('theme');
+  if (storedTheme) return storedTheme;
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark';
+  }
+  return 'light';
+};
+
 function App() {
   const [user, setUser] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [theme, setTheme] = useState(getInitialTheme);
 
   const handleLoginClick = () => {
     setShowLogin(true);
@@ -38,6 +49,10 @@ function App() {
   const handleRegisterClick = () => {
     setShowRegister(true);
     setShowLogin(false);
+  };
+
+  const handleToggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
   const handleRefreshToken = useCallback(async () => {
@@ -108,10 +123,21 @@ function App() {
     fetchUser();
   }, [authRequest]);
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
   return (
     <BrowserRouter>
       <div className="App">
-        <Header onLoginClick={handleLoginClick} onLogout={handleLogout} user={user} />
+        <Header
+          onLoginClick={handleLoginClick}
+          onLogout={handleLogout}
+          onToggleTheme={handleToggleTheme}
+          theme={theme}
+          user={user}
+        />
         <main className="container">
           <Routes>
             <Route

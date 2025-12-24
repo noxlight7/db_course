@@ -1,8 +1,39 @@
+:root {
+  color-scheme: light;
+  --bg: #f5f5f5;
+  --surface: #ffffff;
+  --surface-alt: #f0f0f0;
+  --surface-muted: #f7f7f7;
+  --border: #d7d7d7;
+  --text: #1f1f1f;
+  --text-muted: #5c5c5c;
+  --accent: #2f3742;
+  --accent-strong: #1f232a;
+  --link: #1e88e5;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #14171c;
+  --surface: #1d222b;
+  --surface-alt: #232a36;
+  --surface-muted: #1a1f27;
+  --border: #2f3642;
+  --text: #f1f3f6;
+  --text-muted: #b2b9c3;
+  --accent: #d1d7e0;
+  --accent-strong: #f5f7fa;
+  --link: #8cc5ff;
+  --shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+}
+
 body, html {
   margin: 0;
   padding: 0;
   font-family: Arial, Helvetica, sans-serif;
-  background-color: #f5f5f5;
+  background-color: var(--bg);
+  color: var(--text);
 }
 
 .header {
@@ -10,8 +41,9 @@ body, html {
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 1rem;
-  background-color: #282c34;
-  color: white;
+  background-color: var(--accent);
+  color: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .header-left,
@@ -23,11 +55,16 @@ body, html {
 .play-button,
 .auth-button {
   background: transparent;
-  border: none;
-  color: white;
+  border: 1px solid transparent;
+  color: var(--surface);
   font-size: 1rem;
   cursor: pointer;
   padding: 0.5rem 1rem;
+}
+
+.auth-button:hover,
+.play-button:hover {
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .play-button:disabled {
@@ -87,10 +124,10 @@ body, html {
 }
 
 .template-card {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 10px;
   padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow);
 }
 
 .template-card h4 {
@@ -101,13 +138,13 @@ body, html {
 .template-card p {
   margin-top: 0;
   margin-bottom: 0.75rem;
-  color: #444;
+  color: var(--text-muted);
 }
 
 .template-meta {
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
-  color: #555;
+  color: var(--text-muted);
 }
 
 .template-actions {
@@ -118,12 +155,12 @@ body, html {
 }
 
 .templates-empty {
-  color: #666;
+  color: var(--text-muted);
 }
 
 .primary-button {
-  background: #282c34;
-  color: #fff;
+  background: var(--accent);
+  color: var(--surface);
   border: none;
   border-radius: 6px;
   padding: 0.5rem 1rem;
@@ -131,20 +168,20 @@ body, html {
 }
 
 .primary-button:hover {
-  background: #1f232a;
+  background: var(--accent-strong);
 }
 
 .secondary-button {
-  background: #f0f0f0;
-  color: #333;
-  border: 1px solid #ccc;
+  background: var(--surface-alt);
+  color: var(--text);
+  border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0.5rem 1rem;
   cursor: pointer;
 }
 
 .secondary-button:hover {
-  background: #e2e2e2;
+  background: var(--surface-muted);
 }
 
 .adventure-editor {
@@ -161,7 +198,7 @@ body, html {
 }
 
 .editor-subtitle {
-  color: #666;
+  color: var(--text-muted);
   margin-top: 0.25rem;
 }
 
@@ -173,24 +210,24 @@ body, html {
 }
 
 .tab-button {
-  border: 1px solid #ccc;
-  background: #fff;
+  border: 1px solid var(--border);
+  background: var(--surface);
   border-radius: 6px;
   padding: 0.4rem 0.9rem;
   cursor: pointer;
 }
 
 .tab-button.active {
-  background: #282c34;
-  color: #fff;
-  border-color: #282c34;
+  background: var(--accent);
+  color: var(--surface);
+  border-color: var(--accent);
 }
 
 .tab-content {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 10px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow);
 }
 
 .editor-section {
@@ -209,7 +246,7 @@ body, html {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  border-top: 1px solid #e6e6e6;
+  border-top: 1px solid var(--border);
   padding-top: 1.5rem;
 }
 
@@ -229,14 +266,38 @@ body, html {
   gap: 0.75rem;
 }
 
+.editor-form label {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+
 .editor-form input,
 .editor-form textarea,
 .editor-form select {
   padding: 0.5rem;
-  margin-top: 0.25rem;
-  border: 1px solid #ccc;
+  margin-top: 0;
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 1rem;
+  background: var(--surface);
+  color: var(--text);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.editor-form textarea {
+  min-height: 120px;
+}
+
+.editor-form input:focus,
+.editor-form textarea:focus,
+.editor-form select:focus,
+.modal-content input:focus,
+.modal-content textarea:focus {
+  outline: 2px solid rgba(88, 138, 204, 0.35);
+  border-color: rgba(88, 138, 204, 0.7);
 }
 
 .form-row {
@@ -270,14 +331,14 @@ body, html {
 }
 
 .game-sidebar {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 10px;
   padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow);
 }
 
 .character-card {
-  border-bottom: 1px solid #e6e6e6;
+  border-bottom: 1px solid var(--border);
   padding: 0.5rem 0;
 }
 
@@ -293,11 +354,11 @@ body, html {
 
 .history-panel {
   flex: 1;
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 10px;
   padding: 1rem;
   min-height: 320px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow);
   overflow-y: auto;
 }
 
@@ -308,7 +369,7 @@ body, html {
 .history-role {
   font-size: 0.8rem;
   text-transform: uppercase;
-  color: #777;
+  color: var(--text-muted);
   margin-bottom: 0.25rem;
 }
 
@@ -321,8 +382,10 @@ body, html {
   resize: vertical;
   padding: 0.75rem;
   border-radius: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   font-size: 1rem;
+  background: var(--surface);
+  color: var(--text);
 }
 
 @media (max-width: 900px) {
@@ -346,11 +409,11 @@ body, html {
 }
 
 .modal {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 8px;
   padding: 1.5rem;
   width: 320px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow);
   position: relative;
 }
 
@@ -388,18 +451,22 @@ body, html {
 .modal-content input {
   padding: 0.5rem;
   margin-top: 0.25rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 1rem;
+  background: var(--surface);
+  color: var(--text);
 }
 
 .modal-content textarea {
   padding: 0.5rem;
   margin-top: 0.25rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 1rem;
   resize: vertical;
+  background: var(--surface);
+  color: var(--text);
 }
 
 .modal-actions {
@@ -416,16 +483,16 @@ body, html {
 .submit-button {
   margin-top: 1rem;
   padding: 0.5rem;
-  background-color: #61dafb;
+  background-color: var(--accent);
   border: none;
   border-radius: 4px;
-  color: #282c34;
+  color: var(--surface);
   font-weight: bold;
   cursor: pointer;
 }
 
 .submit-button:hover {
-  background-color: #52c1e9;
+  background-color: var(--accent-strong);
 }
 
 .error-message {
@@ -441,7 +508,7 @@ body, html {
 .link-button {
   background: none;
   border: none;
-  color: #1e88e5;
+  color: var(--link);
   cursor: pointer;
   padding: 0;
   font-size: 0.85rem;
@@ -449,4 +516,56 @@ body, html {
 
 .link-button:hover {
   text-decoration: underline;
+}
+
+.theme-toggle {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.9rem;
+  margin-right: 0.5rem;
+}
+
+.editor-section.split-panel {
+  grid-template-columns: minmax(240px, 1fr) minmax(320px, 1.1fr);
+  align-items: start;
+}
+
+.split-panel .editor-list,
+.split-panel .editor-panel {
+  max-height: 72vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.characters-layout {
+  grid-template-columns: minmax(240px, 1fr) minmax(360px, 1.2fr);
+  align-items: start;
+}
+
+.characters-list,
+.characters-panel {
+  max-height: 72vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .editor-section.split-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .split-panel .editor-list,
+  .split-panel .editor-panel {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .characters-list,
+  .characters-panel {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
 }

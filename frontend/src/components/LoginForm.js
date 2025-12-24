@@ -10,7 +10,7 @@ import axios from 'axios';
  * displays an error message.
  */
 function LoginForm({ onClose, onSwitchToRegister, onLoginSuccess, apiBaseUrl }) {
-  const [username, setUsername] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
@@ -20,7 +20,7 @@ function LoginForm({ onClose, onSwitchToRegister, onLoginSuccess, apiBaseUrl }) 
     try {
       // Obtain access and refresh tokens
       const tokenResponse = await axios.post(`${apiBaseUrl}/api/auth/token/`, {
-        username,
+        username: identifier,
         password,
       });
       const { access, refresh } = tokenResponse.data;
@@ -44,11 +44,11 @@ function LoginForm({ onClose, onSwitchToRegister, onLoginSuccess, apiBaseUrl }) 
         {error && <p className="error-message">{error}</p>}
         <form onSubmit={handleSubmit}>
           <label>
-            Логин
+            Логин или email
             <input
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               required
             />
           </label>
