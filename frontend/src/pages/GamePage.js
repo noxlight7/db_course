@@ -13,6 +13,7 @@ function GamePage({ apiBaseUrl, authRequest }) {
   const [submitting, setSubmitting] = useState(false);
   const [historyBusy, setHistoryBusy] = useState(false);
   const [runInfo, setRunInfo] = useState(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
 
   useEffect(() => {
     const fetchState = async () => {
@@ -126,6 +127,32 @@ function GamePage({ apiBaseUrl, authRequest }) {
     }
   };
 
+  const handleExportPdf = async () => {
+    if (pdfBusy) return;
+    setPdfBusy(true);
+    setError('');
+    try {
+      const response = await authRequest({
+        method: 'get',
+        url: `${apiBaseUrl}/api/adventures/runs/${runId}/history/pdf/`,
+        responseType: 'blob',
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `adventure_${runId}_history.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError('Не удалось сохранить историю в PDF.');
+    } finally {
+      setPdfBusy(false);
+    }
+  };
+
   const rollbackMinId = runInfo?.rollback_min_history_id ?? null;
   const lastEntryId = history.length ? history[history.length - 1].id : null;
 
@@ -214,6 +241,14 @@ function GamePage({ apiBaseUrl, authRequest }) {
               disabled={generating || submitting || historyBusy}
             >
               Продолжить
+            </button>
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={handleExportPdf}
+              disabled={pdfBusy || submitting || generating || historyBusy}
+            >
+              Сохранить PDF
             </button>
           </div>
         </form>

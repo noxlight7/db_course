@@ -142,16 +142,19 @@ def _apply_card_updates(adventure: Adventure, payload: dict) -> None:
 def _prepare_history_for_prompt(adventure: Adventure, client: LLMClient) -> list[AdventureHistory]:
     history_entries = list(AdventureHistory.objects.filter(adventure=adventure).order_by("id"))
     max_posts, tail_posts = _get_history_limits()
-    if len(history_entries) <= max_posts or tail_posts == 0:
+    if len(history_entries) <= max_posts:
         return history_entries
+    if tail_posts == 0:
+        return history_entries[-max_posts:]
+    if adventure.rollback_min_history_id:
+        trimmed = [entry for entry in history_entries if entry.id >= adventure.rollback_min_history_id]
+        if len(trimmed) <= max_posts:
+            return trimmed
     if len(history_entries) <= tail_posts:
         return history_entries
-    cutoff_entry = history_entries[-tail_posts - 1]
-    if adventure.rollback_min_history_id and adventure.rollback_min_history_id >= cutoff_entry.id:
-        return [entry for entry in history_entries if entry.id <= adventure.rollback_min_history_id]
+    cutoff_entry = history_entries[-max_posts]
 
     attempt_tail = tail_posts
-    cutoff_entry = history_entries[-attempt_tail - 1]
     tail_entries = history_entries[-attempt_tail:]
     update_prompt = _build_card_update_prompt(adventure, tail_entries)
     update_max_tokens, strict_max_tokens = _get_update_token_limits()
@@ -168,9 +171,9 @@ def _prepare_history_for_prompt(adventure: Adventure, client: LLMClient) -> list
         _apply_card_updates(adventure, payload)
         adventure.rollback_min_history_id = cutoff_entry.id
         adventure.save(update_fields=["rollback_min_history_id"])
-        return [entry for entry in history_entries if entry.id <= cutoff_entry.id]
+        return history_entries[-max_posts:]
 
-    return [entry for entry in history_entries if entry.id <= cutoff_entry.id]
+    return history_entries[-max_posts:]
 
 
 def _set_ai_waiting(adventure_id: int, waiting: bool) -> None:

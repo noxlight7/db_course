@@ -8,6 +8,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
+from .models import Administrator
 
 User = get_user_model()
 
@@ -32,3 +33,10 @@ class UserAdmin(DjangoUserAdmin):
     list_display = ('username', 'email', 'is_staff', 'credits')
     search_fields = ('username', 'email')
     ordering = ('username',)
+
+
+@admin.register(Administrator)
+class AdministratorAdmin(admin.ModelAdmin):
+    list_display = ("user", "level")
+    search_fields = ("user__username", "user__email")
+    ordering = ("-level", "user__username")

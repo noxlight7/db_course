@@ -8,6 +8,7 @@ const useAdventureEntity = ({
   mapItemToForm,
   buildPayload,
   onSaved = () => {},
+  readOnly = false,
 }) => {
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(initialForm);
@@ -43,6 +44,7 @@ const useAdventureEntity = ({
 
   const submit = async (event) => {
     event.preventDefault();
+    if (readOnly) return;
     setSaving(true);
     setError('');
     try {
@@ -75,6 +77,7 @@ const useAdventureEntity = ({
   };
 
   const remove = async (id) => {
+    if (readOnly) return;
     if (!window.confirm('Удалить запись?')) return;
     try {
       await authRequest({ method: 'delete', url: `${endpoint}${id}/` });
@@ -87,7 +90,7 @@ const useAdventureEntity = ({
   return {
     items,
     form,
-    setForm,
+    setForm: readOnly ? () => {} : setForm,
     editingId,
     startEdit,
     resetForm,
@@ -95,6 +98,7 @@ const useAdventureEntity = ({
     remove,
     error,
     saving,
+    readOnly,
   };
 };
 

@@ -13,16 +13,54 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
+from .models import Administrator
+
 User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for reading user details."""
 
+    admin_level = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'credits', 'is_admin')
-        read_only_fields = ('id', 'credits', 'is_admin')
+        fields = ('id', 'username', 'email', 'credits', 'admin_level')
+        read_only_fields = ('id', 'credits', 'admin_level')
+
+    def get_admin_level(self, obj: User) -> int | None:
+        try:
+            return obj.administrator_profile.level
+        except Administrator.DoesNotExist:
+            return None
+
+
+class AdminUserSummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "username", "email")
+
+
+class AdministratorSerializer(serializers.ModelSerializer):
+    user = AdminUserSummarySerializer(read_only=True)
+
+    class Meta:
+        model = Administrator
+        fields = ("id", "level", "user")
+
+
+class AdministratorCreateSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    level = serializers.IntegerField(min_value=1)
+
+    def validate_username(self, value: str) -> str:
+        if not User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError("Пользователь с таким именем не найден.")
+        return value
+
+
+class AdministratorUpdateSerializer(serializers.Serializer):
+    level = serializers.IntegerField(min_value=1)
 
 
 class RegisterSerializer(serializers.ModelSerializer):

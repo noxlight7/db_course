@@ -12,6 +12,11 @@ function GeneralTab({
   exportError,
   exporting,
   handleExportAdventure,
+  readOnly,
+  canSubmitForModeration,
+  submittingModeration,
+  submitModerationError,
+  handleSubmitForModeration,
   characters,
   heroSetupSummary,
   heroSetupForm,
@@ -28,7 +33,12 @@ function GeneralTab({
         {generalError && <div className="error-message">{generalError}</div>}
         <label>
           Название
-          <input name="title" value={generalForm.title} onChange={handleGeneralChange} />
+          <input
+            name="title"
+            value={generalForm.title}
+            onChange={handleGeneralChange}
+            disabled={readOnly}
+          />
         </label>
         <label>
           Описание
@@ -37,6 +47,7 @@ function GeneralTab({
             rows="3"
             value={generalForm.description}
             onChange={handleGeneralChange}
+            disabled={readOnly}
           />
         </label>
         <label>
@@ -46,6 +57,7 @@ function GeneralTab({
             rows="3"
             value={generalForm.spec_instructions}
             onChange={handleGeneralChange}
+            disabled={readOnly}
           />
         </label>
         <label>
@@ -55,11 +67,17 @@ function GeneralTab({
             rows="3"
             value={generalForm.intro}
             onChange={handleGeneralChange}
+            disabled={readOnly}
           />
         </label>
         <label>
           Главный герой
-          <select name="primary_hero" value={generalForm.primary_hero} onChange={handleGeneralChange}>
+          <select
+            name="primary_hero"
+            value={generalForm.primary_hero}
+            onChange={handleGeneralChange}
+            disabled={readOnly}
+          >
             <option value="">Сгенерировать перед приключением</option>
             {sortByTitle(characters.items).map((character) => (
               <option key={character.id} value={character.id}>
@@ -69,7 +87,7 @@ function GeneralTab({
           </select>
         </label>
         <div className="form-actions">
-          <button className="primary-button" type="submit" disabled={savingGeneral}>
+          <button className="primary-button" type="submit" disabled={savingGeneral || readOnly}>
             Сохранить
           </button>
           {isTemplate && (
@@ -82,8 +100,19 @@ function GeneralTab({
               Экспорт в JSON
             </button>
           )}
+          {isTemplate && canSubmitForModeration && (
+            <button
+              className="primary-button"
+              type="button"
+              onClick={handleSubmitForModeration}
+              disabled={submittingModeration}
+            >
+              Опубликовать
+            </button>
+          )}
         </div>
         {exportError && <div className="error-message">{exportError}</div>}
+        {submitModerationError && <div className="error-message">{submitModerationError}</div>}
       </form>
       {isTemplate && !generalForm.primary_hero && (
         <form className="editor-form" onSubmit={saveHeroSetup}>
@@ -107,6 +136,7 @@ function GeneralTab({
                   default_location: event.target.value,
                 }))
               }
+              disabled={readOnly}
             >
               <option value="">Создать новую при старте</option>
               {sortByTitle(locations.items).map((location) => (
@@ -127,6 +157,7 @@ function GeneralTab({
                     require_race: event.target.checked,
                   }))
                 }
+                disabled={readOnly}
               />
               Выбирать расу при старте
             </label>
@@ -137,7 +168,7 @@ function GeneralTab({
                 onChange={(event) =>
                   setHeroSetupForm((prev) => ({ ...prev, default_race: event.target.value }))
                 }
-                disabled={heroSetupForm.require_race}
+                disabled={heroSetupForm.require_race || readOnly}
               >
                 <option value="">Не задана</option>
                 {sortByTitle(races.items).map((race) => (
@@ -159,6 +190,7 @@ function GeneralTab({
                     require_age: event.target.checked,
                   }))
                 }
+                disabled={readOnly}
               />
               Выбирать возраст при старте
             </label>
@@ -171,7 +203,7 @@ function GeneralTab({
                 onChange={(event) =>
                   setHeroSetupForm((prev) => ({ ...prev, default_age: event.target.value }))
                 }
-                disabled={heroSetupForm.require_age}
+                disabled={heroSetupForm.require_age || readOnly}
               />
             </label>
           </div>
@@ -186,6 +218,7 @@ function GeneralTab({
                     require_body_power: event.target.checked,
                   }))
                 }
+                disabled={readOnly}
               />
               Выбирать силу тела при старте
             </label>
@@ -198,7 +231,7 @@ function GeneralTab({
                 onChange={(event) =>
                   setHeroSetupForm((prev) => ({ ...prev, default_body_power: event.target.value }))
                 }
-                disabled={heroSetupForm.require_body_power}
+                disabled={heroSetupForm.require_body_power || readOnly}
               />
             </label>
           </div>
@@ -213,6 +246,7 @@ function GeneralTab({
                     require_mind_power: event.target.checked,
                   }))
                 }
+                disabled={readOnly}
               />
               Выбирать силу разума при старте
             </label>
@@ -225,7 +259,7 @@ function GeneralTab({
                 onChange={(event) =>
                   setHeroSetupForm((prev) => ({ ...prev, default_mind_power: event.target.value }))
                 }
-                disabled={heroSetupForm.require_mind_power}
+                disabled={heroSetupForm.require_mind_power || readOnly}
               />
             </label>
           </div>
@@ -240,6 +274,7 @@ function GeneralTab({
                     require_will_power: event.target.checked,
                   }))
                 }
+                disabled={readOnly}
               />
               Выбирать силу воли при старте
             </label>
@@ -252,7 +287,7 @@ function GeneralTab({
                 onChange={(event) =>
                   setHeroSetupForm((prev) => ({ ...prev, default_will_power: event.target.value }))
                 }
-                disabled={heroSetupForm.require_will_power}
+                disabled={heroSetupForm.require_will_power || readOnly}
               />
             </label>
           </div>
@@ -260,7 +295,11 @@ function GeneralTab({
             <div className="template-meta">Знания систем и приемов выбираются при старте приключения.</div>
           </div>
           <div className="form-actions">
-            <button className="primary-button" type="submit" disabled={savingHeroSetup}>
+            <button
+              className="primary-button"
+              type="submit"
+              disabled={savingHeroSetup || readOnly}
+            >
               Сохранить настройки героя
             </button>
           </div>

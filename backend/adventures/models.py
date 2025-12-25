@@ -255,6 +255,32 @@ class Character(models.Model):
         return self.title
 
 
+class ModerationEntry(models.Model):
+    adventure = models.OneToOneField(
+        Adventure,
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name="moderation_entry",
+    )
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"Moderation: {self.adventure.title}"
+
+
+class PublishedAdventure(models.Model):
+    adventure = models.OneToOneField(
+        Adventure,
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name="publication_entry",
+    )
+    published_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"Published: {self.adventure.title}"
+
+
 class SkillSystem(models.Model):
     adventure = models.ForeignKey(Adventure, on_delete=models.CASCADE, related_name="skill_systems")
     title = models.TextField()

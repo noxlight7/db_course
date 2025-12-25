@@ -1,7 +1,10 @@
 """Views for managing adventure templates and related resources."""
 from __future__ import annotations
 
+from django.db.models import Q
+from django.http import Http404
 from rest_framework import generics, permissions
+from rest_framework.permissions import SAFE_METHODS
 
 from .base import AdventureTemplateMixin
 from ..models import (
@@ -32,6 +35,7 @@ from ..serializers import (
     SkillSystemSerializer,
     TechniqueSerializer,
 )
+from ..utils import is_moderator
 
 
 class AdventureTemplateListCreateView(generics.ListCreateAPIView):
@@ -49,7 +53,14 @@ class AdventureTemplateDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Adventure.objects.filter(author_user=self.request.user, is_template=True)
+        base_queryset = Adventure.objects.filter(is_template=True)
+        if self.request.method in SAFE_METHODS and is_moderator(self.request.user):
+            return base_queryset.filter(
+                Q(author_user=self.request.user)
+                | Q(moderation_entry__isnull=False)
+                | Q(publication_entry__isnull=False)
+            )
+        return base_queryset.filter(author_user=self.request.user)
 
     def perform_update(self, serializer):
         adventure = serializer.save()
@@ -69,7 +80,12 @@ class AdventureHeroSetupDetailView(AdventureTemplateMixin, generics.RetrieveUpda
 
     def get_object(self):
         adventure = self.get_adventure()
-        setup, _ = AdventureHeroSetup.objects.get_or_create(adventure=adventure)
+        if adventure.author_user_id == self.request.user.id:
+            setup, _ = AdventureHeroSetup.objects.get_or_create(adventure=adventure)
+            return setup
+        setup = AdventureHeroSetup.objects.filter(adventure=adventure).first()
+        if not setup:
+            raise Http404
         return setup
 
 

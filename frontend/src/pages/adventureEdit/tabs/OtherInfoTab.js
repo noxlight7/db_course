@@ -2,7 +2,7 @@ import React from 'react';
 
 import { formatTags } from '../utils';
 
-function OtherInfoTab({ otherInfo }) {
+function OtherInfoTab({ otherInfo, readOnly }) {
   return (
     <div className="editor-section split-panel">
       <div className="editor-list">
@@ -13,14 +13,20 @@ function OtherInfoTab({ otherInfo }) {
             {item.category && <div className="template-meta">Категория: {item.category}</div>}
             {item.description && <p>{item.description}</p>}
             <div className="template-meta">Теги: {formatTags(item.tags) || '—'}</div>
-            <div className="template-actions">
-              <button className="secondary-button" type="button" onClick={() => otherInfo.startEdit(item)}>
-                Изменить
-              </button>
-              <button className="link-button" type="button" onClick={() => otherInfo.remove(item.id)}>
-                Удалить
-              </button>
-            </div>
+            {!readOnly && (
+              <div className="template-actions">
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={() => otherInfo.startEdit(item)}
+                >
+                  Изменить
+                </button>
+                <button className="link-button" type="button" onClick={() => otherInfo.remove(item.id)}>
+                  Удалить
+                </button>
+              </div>
+            )}
           </article>
         ))}
       </div>
@@ -31,6 +37,7 @@ function OtherInfoTab({ otherInfo }) {
           <input
             value={otherInfo.form.category}
             onChange={(event) => otherInfo.setForm((prev) => ({ ...prev, category: event.target.value }))}
+            disabled={readOnly}
           />
         </label>
         <label>
@@ -38,6 +45,7 @@ function OtherInfoTab({ otherInfo }) {
           <input
             value={otherInfo.form.title}
             onChange={(event) => otherInfo.setForm((prev) => ({ ...prev, title: event.target.value }))}
+            disabled={readOnly}
           />
         </label>
         <label>
@@ -48,6 +56,7 @@ function OtherInfoTab({ otherInfo }) {
             onChange={(event) =>
               otherInfo.setForm((prev) => ({ ...prev, description: event.target.value }))
             }
+            disabled={readOnly}
           />
         </label>
         <label>
@@ -55,13 +64,14 @@ function OtherInfoTab({ otherInfo }) {
           <input
             value={otherInfo.form.tags}
             onChange={(event) => otherInfo.setForm((prev) => ({ ...prev, tags: event.target.value }))}
+            disabled={readOnly}
           />
         </label>
         <div className="form-actions">
-          <button className="primary-button" type="submit" disabled={otherInfo.saving}>
+          <button className="primary-button" type="submit" disabled={otherInfo.saving || readOnly}>
             {otherInfo.editingId ? 'Сохранить' : 'Добавить'}
           </button>
-          {otherInfo.editingId && (
+          {otherInfo.editingId && !readOnly && (
             <button className="secondary-button" type="button" onClick={otherInfo.resetForm}>
               Отмена
             </button>

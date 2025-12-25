@@ -2,7 +2,7 @@ import React from 'react';
 
 import { formatTags, sortByTitle } from '../utils';
 
-function TechniquesTab({ techniques, systems }) {
+function TechniquesTab({ techniques, systems, readOnly }) {
   return (
     <div className="editor-section split-panel">
       <div className="editor-list">
@@ -19,14 +19,24 @@ function TechniquesTab({ techniques, systems }) {
               {item.required_system_level}
             </div>
             <div className="template-meta">Теги: {formatTags(item.tags) || '—'}</div>
-            <div className="template-actions">
-              <button className="secondary-button" type="button" onClick={() => techniques.startEdit(item)}>
-                Изменить
-              </button>
-              <button className="link-button" type="button" onClick={() => techniques.remove(item.id)}>
-                Удалить
-              </button>
-            </div>
+            {!readOnly && (
+              <div className="template-actions">
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={() => techniques.startEdit(item)}
+                >
+                  Изменить
+                </button>
+                <button
+                  className="link-button"
+                  type="button"
+                  onClick={() => techniques.remove(item.id)}
+                >
+                  Удалить
+                </button>
+              </div>
+            )}
           </article>
         ))}
       </div>
@@ -37,6 +47,7 @@ function TechniquesTab({ techniques, systems }) {
           <select
             value={techniques.form.system}
             onChange={(event) => techniques.setForm((prev) => ({ ...prev, system: event.target.value }))}
+            disabled={readOnly}
           >
             <option value="">Выберите систему</option>
             {sortByTitle(systems.items).map((system) => (
@@ -51,6 +62,7 @@ function TechniquesTab({ techniques, systems }) {
           <input
             value={techniques.form.title}
             onChange={(event) => techniques.setForm((prev) => ({ ...prev, title: event.target.value }))}
+            disabled={readOnly}
           />
         </label>
         <label>
@@ -61,6 +73,7 @@ function TechniquesTab({ techniques, systems }) {
             onChange={(event) =>
               techniques.setForm((prev) => ({ ...prev, description: event.target.value }))
             }
+            disabled={readOnly}
           />
         </label>
         <div className="form-row">
@@ -73,6 +86,7 @@ function TechniquesTab({ techniques, systems }) {
               onChange={(event) =>
                 techniques.setForm((prev) => ({ ...prev, difficulty: event.target.value }))
               }
+              disabled={readOnly}
             />
           </label>
           <label>
@@ -81,7 +95,7 @@ function TechniquesTab({ techniques, systems }) {
               type="number"
               min="0"
               value={techniques.form.tier}
-              disabled={techniques.form.is_rankless}
+              disabled={techniques.form.is_rankless || readOnly}
               onChange={(event) =>
                 techniques.setForm((prev) => ({ ...prev, tier: event.target.value }))
               }
@@ -98,6 +112,7 @@ function TechniquesTab({ techniques, systems }) {
                   tier: event.target.checked ? '' : prev.tier,
                 }))
               }
+              disabled={readOnly}
             />
             Безранговый прием
           </label>
@@ -113,6 +128,7 @@ function TechniquesTab({ techniques, systems }) {
                   required_system_level: event.target.value,
                 }))
               }
+              disabled={readOnly}
             />
           </label>
         </div>
@@ -121,13 +137,14 @@ function TechniquesTab({ techniques, systems }) {
           <input
             value={techniques.form.tags}
             onChange={(event) => techniques.setForm((prev) => ({ ...prev, tags: event.target.value }))}
+            disabled={readOnly}
           />
         </label>
         <div className="form-actions">
-          <button className="primary-button" type="submit" disabled={techniques.saving}>
+          <button className="primary-button" type="submit" disabled={techniques.saving || readOnly}>
             {techniques.editingId ? 'Сохранить' : 'Добавить'}
           </button>
-          {techniques.editingId && (
+          {techniques.editingId && !readOnly && (
             <button className="secondary-button" type="button" onClick={techniques.resetForm}>
               Отмена
             </button>

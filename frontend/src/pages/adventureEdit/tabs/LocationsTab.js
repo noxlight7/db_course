@@ -2,7 +2,7 @@ import React from 'react';
 
 import { formatTags } from '../utils';
 
-function LocationsTab({ locations }) {
+function LocationsTab({ locations, readOnly }) {
   return (
     <div className="editor-section split-panel">
       <div className="editor-list">
@@ -15,18 +15,24 @@ function LocationsTab({ locations }) {
               Координаты: {item.x}, {item.y} • Размер: {item.width}x{item.height}
             </div>
             <div className="template-meta">Теги: {formatTags(item.tags) || '—'}</div>
-            <div className="template-actions">
-              <button
-                className="secondary-button"
-                type="button"
-                onClick={() => locations.startEdit(item)}
-              >
-                Изменить
-              </button>
-              <button className="link-button" type="button" onClick={() => locations.remove(item.id)}>
-                Удалить
-              </button>
-            </div>
+            {!readOnly && (
+              <div className="template-actions">
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={() => locations.startEdit(item)}
+                >
+                  Изменить
+                </button>
+                <button
+                  className="link-button"
+                  type="button"
+                  onClick={() => locations.remove(item.id)}
+                >
+                  Удалить
+                </button>
+              </div>
+            )}
           </article>
         ))}
       </div>
@@ -37,6 +43,7 @@ function LocationsTab({ locations }) {
           <input
             value={locations.form.title}
             onChange={(event) => locations.setForm((prev) => ({ ...prev, title: event.target.value }))}
+            disabled={readOnly}
           />
         </label>
         <label>
@@ -47,6 +54,7 @@ function LocationsTab({ locations }) {
             onChange={(event) =>
               locations.setForm((prev) => ({ ...prev, description: event.target.value }))
             }
+            disabled={readOnly}
           />
         </label>
         <div className="form-row">
@@ -56,6 +64,7 @@ function LocationsTab({ locations }) {
               type="number"
               value={locations.form.x}
               onChange={(event) => locations.setForm((prev) => ({ ...prev, x: event.target.value }))}
+              disabled={readOnly}
             />
           </label>
           <label>
@@ -64,6 +73,7 @@ function LocationsTab({ locations }) {
               type="number"
               value={locations.form.y}
               onChange={(event) => locations.setForm((prev) => ({ ...prev, y: event.target.value }))}
+              disabled={readOnly}
             />
           </label>
           <label>
@@ -75,6 +85,7 @@ function LocationsTab({ locations }) {
               onChange={(event) =>
                 locations.setForm((prev) => ({ ...prev, width: event.target.value }))
               }
+              disabled={readOnly}
             />
           </label>
           <label>
@@ -86,6 +97,7 @@ function LocationsTab({ locations }) {
               onChange={(event) =>
                 locations.setForm((prev) => ({ ...prev, height: event.target.value }))
               }
+              disabled={readOnly}
             />
           </label>
         </div>
@@ -94,13 +106,18 @@ function LocationsTab({ locations }) {
           <input
             value={locations.form.tags}
             onChange={(event) => locations.setForm((prev) => ({ ...prev, tags: event.target.value }))}
+            disabled={readOnly}
           />
         </label>
         <div className="form-actions">
-          <button className="primary-button" type="submit" disabled={locations.saving}>
+          <button
+            className="primary-button"
+            type="submit"
+            disabled={locations.saving || readOnly}
+          >
             {locations.editingId ? 'Сохранить' : 'Добавить'}
           </button>
-          {locations.editingId && (
+          {locations.editingId && !readOnly && (
             <button className="secondary-button" type="button" onClick={locations.resetForm}>
               Отмена
             </button>

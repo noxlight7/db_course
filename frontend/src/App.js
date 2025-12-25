@@ -8,6 +8,8 @@ import AdventureEditPage from './pages/AdventureEditPage';
 import GamePage from './pages/GamePage';
 import HeroSetupPage from './pages/HeroSetupPage';
 import TemplatesPage from './pages/TemplatesPage';
+import AdminPage from './pages/AdminPage';
+import ModerationPage from './pages/ModerationPage';
 
 // Base URL for the API. This value can be overridden by providing
 // REACT_APP_API_URL in your environment (see .env.example).
@@ -21,6 +23,30 @@ const getInitialTheme = () => {
     return 'dark';
   }
   return 'light';
+};
+
+const decodeJwtPayload = (token) => {
+  try {
+    const payload = token.split('.')[1];
+    if (!payload) return null;
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const json = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((char) => `%${`00${char.charCodeAt(0).toString(16)}`.slice(-2)}`)
+        .join('')
+    );
+    return JSON.parse(json);
+  } catch (error) {
+    return null;
+  }
+};
+
+const isTokenExpired = (token) => {
+  const payload = decodeJwtPayload(token);
+  if (!payload?.exp) return false;
+  const now = Math.floor(Date.now() / 1000);
+  return payload.exp <= now + 30;
 };
 
 function App() {
@@ -73,7 +99,18 @@ function App() {
 
   const authRequest = useCallback(
     async (config) => {
-      const token = localStorage.getItem('access');
+      let token = localStorage.getItem('access');
+      if (token && isTokenExpired(token)) {
+        const refreshed = await handleRefreshToken();
+        if (refreshed) {
+          token = localStorage.getItem('access');
+        }
+      } else if (!token) {
+        const refreshed = await handleRefreshToken();
+        if (refreshed) {
+          token = localStorage.getItem('access');
+        }
+      }
       if (!token) {
         throw new Error('No access token');
       }
@@ -178,6 +215,18 @@ function App() {
             <Route
               path="/adventures/:id/play"
               element={<GamePage apiBaseUrl={API_BASE_URL} authRequest={authRequest} />}
+            />
+            <Route
+              path="/admin"
+              element={
+                <AdminPage user={user} apiBaseUrl={API_BASE_URL} authRequest={authRequest} />
+              }
+            />
+            <Route
+              path="/moderation"
+              element={
+                <ModerationPage user={user} apiBaseUrl={API_BASE_URL} authRequest={authRequest} />
+              }
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

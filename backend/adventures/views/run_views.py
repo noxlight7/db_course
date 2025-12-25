@@ -1,8 +1,17 @@
 """Views for running adventures (non-template gameplay)."""
 from __future__ import annotations
 
+from io import BytesIO
+import os
+
 from django.db import transaction
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
 from rest_framework import generics, permissions, status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -17,6 +26,8 @@ from ..models import (
     CharacterTechnique,
     Faction,
     Location,
+    ModerationEntry,
+    PublishedAdventure,
     OtherInfo,
     Race,
     SkillSystem,
@@ -96,7 +107,14 @@ class AdventureRunStartView(AdventureTemplateMixin, APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, template_id):
-        template = self.get_adventure()
+        template = Adventure.objects.filter(id=template_id, is_template=True).first()
+        if not template:
+            raise PermissionDenied("Шаблон приключения не найден.")
+        if template.author_user_id != request.user.id:
+            if ModerationEntry.objects.filter(adventure=template).exists():
+                raise PermissionDenied("Приключение еще на модерации.")
+            if not PublishedAdventure.objects.filter(adventure=template).exists():
+                raise PermissionDenied("Недостаточно прав для запуска приключения.")
         with transaction.atomic():
             template_setup, _ = AdventureHeroSetup.objects.get_or_create(adventure=template)
             run = Adventure.objects.create(
@@ -438,6 +456,96 @@ class AdventureRunHistoryView(AdventureRunMixin, generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(adventure=self.get_adventure(), role=AdventureHistory.Role.USER)
+
+
+class AdventureRunHistoryPdfView(AdventureRunMixin, APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, run_id):
+        adventure = self.get_adventure()
+        history_entries = AdventureHistory.objects.filter(adventure=adventure).order_by("id")
+        heroes = Character.objects.filter(adventure=adventure, is_player=True).order_by("title")
+
+        buffer = BytesIO()
+        pdf = canvas.Canvas(buffer, pagesize=A4)
+        font_name = "Helvetica"
+        font_size = 11
+        font_path = os.getenv(
+            "PDF_FONT_PATH",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        )
+        if os.path.exists(font_path):
+            try:
+                pdfmetrics.registerFont(TTFont("DejaVuSans", font_path))
+                font_name = "DejaVuSans"
+            except Exception:
+                font_name = "Helvetica"
+        width, height = A4
+        left_margin = 48
+        top = height - 54
+        line_height = 14
+
+        def set_font():
+            pdf.setFont(font_name, font_size)
+
+        def write_line(text, current_y):
+            set_font()
+            pdf.drawString(left_margin, current_y, text)
+            return current_y - line_height
+
+        def wrap_text(text, max_width):
+            paragraphs = text.splitlines() or [""]
+            lines = []
+            for paragraph in paragraphs:
+                words = paragraph.split()
+                if not words:
+                    lines.append("")
+                    continue
+                current = ""
+                for word in words:
+                    test = f"{current} {word}".strip()
+                    if pdfmetrics.stringWidth(test, font_name, font_size) <= max_width:
+                        current = test
+                    else:
+                        if current:
+                            lines.append(current)
+                        current = word
+                if current:
+                    lines.append(current)
+            return lines
+
+        y = top
+        y = write_line(f"Приключение: {adventure.title}", y)
+        hero_names = ", ".join(hero.title for hero in heroes) or "—"
+        y = write_line(f"Главные герои: {hero_names}", y)
+        y = write_line("История:", y - line_height)
+
+        max_width = width - left_margin * 2
+        for entry in history_entries:
+            role_label = entry.role
+            header = f"{role_label.upper()}:"
+            if y < 72:
+                pdf.showPage()
+                y = top
+                set_font()
+            y = write_line(header, y)
+            for line in wrap_text(entry.content or "", max_width):
+                if y < 72:
+                    pdf.showPage()
+                    y = top
+                    set_font()
+                if line == "":
+                    y -= line_height
+                else:
+                    y = write_line(line, y)
+            y -= line_height / 2
+
+        pdf.showPage()
+        pdf.save()
+        buffer.seek(0)
+        response = HttpResponse(buffer, content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="adventure_{adventure.id}_history.pdf"'
+        return response
 
 
 class AdventureRunCharactersView(AdventureRunMixin, generics.ListAPIView):

@@ -21,7 +21,12 @@ from .views import (
     AdventureRunListView,
     AdventureRunStartView,
     AdventureRunDetailView,
+    AdventureRunHistoryPdfView,
     AdventureHeroSetupDetailView,
+    ModerationQueueListView,
+    PublishedAdventureListView,
+    AdventureSubmitForModerationView,
+    ModerationDecisionView,
     CharacterSystemDetailView,
     CharacterSystemListCreateView,
     CharacterTechniqueDetailView,
@@ -171,6 +176,26 @@ urlpatterns = [
         name="adventure_hero_setup",
     ),
     path(
+        "templates/<int:template_id>/submit/",
+        AdventureSubmitForModerationView.as_view(),
+        name="adventure_submit_for_moderation",
+    ),
+    path(
+        "moderation/queue/",
+        ModerationQueueListView.as_view(),
+        name="adventure_moderation_queue",
+    ),
+    path(
+        "moderation/published/",
+        PublishedAdventureListView.as_view(),
+        name="adventure_published_list",
+    ),
+    path(
+        "moderation/<int:template_id>/<str:decision>/",
+        ModerationDecisionView.as_view(),
+        name="adventure_moderation_decision",
+    ),
+    path(
         "runs/",
         AdventureRunListView.as_view(),
         name="adventure_runs",
@@ -194,6 +219,11 @@ urlpatterns = [
         "runs/<int:run_id>/history/",
         AdventureRunHistoryView.as_view(),
         name="adventure_run_history",
+    ),
+    path(
+        "runs/<int:run_id>/history/pdf/",
+        AdventureRunHistoryPdfView.as_view(),
+        name="adventure_run_history_pdf",
     ),
     path(
         "runs/<int:run_id>/history/next/",

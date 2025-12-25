@@ -5,6 +5,7 @@ function TemplatesPage({ user, apiBaseUrl, authRequest }) {
   const navigate = useNavigate();
   const [templates, setTemplates] = useState([]);
   const [runs, setRuns] = useState([]);
+  const [published, setPublished] = useState([]);
   const [showCreateAdventure, setShowCreateAdventure] = useState(false);
   const [createForm, setCreateForm] = useState({ title: '', description: '' });
   const [createError, setCreateError] = useState('');
@@ -15,6 +16,7 @@ function TemplatesPage({ user, apiBaseUrl, authRequest }) {
   useEffect(() => {
     if (!user) {
       setTemplates([]);
+      setPublished([]);
       return;
     }
     const fetchTemplates = async () => {
@@ -29,9 +31,15 @@ function TemplatesPage({ user, apiBaseUrl, authRequest }) {
           url: `${apiBaseUrl}/api/adventures/runs/`,
         });
         setRuns(runsResponse.data);
+        const publishedResponse = await authRequest({
+          method: 'get',
+          url: `${apiBaseUrl}/api/adventures/moderation/published/`,
+        });
+        setPublished(publishedResponse.data);
       } catch (error) {
         setTemplates([]);
         setRuns([]);
+        setPublished([]);
       }
     };
     fetchTemplates();
@@ -236,6 +244,44 @@ function TemplatesPage({ user, apiBaseUrl, authRequest }) {
                     </div>
                   </article>
                 ))}
+              </div>
+            )}
+          </section>
+          <section className="templates-section">
+            <div className="templates-header">
+              <h3>Опубликованные приключения</h3>
+            </div>
+            {published.length === 0 ? (
+              <p className="templates-empty">Пока нет опубликованных приключений.</p>
+            ) : (
+              <div className="templates-grid">
+                {published.map((entry) => {
+                  const isOwner = entry.author_username === user.username;
+                  return (
+                    <article className="template-card" key={entry.adventure_id}>
+                      <h4>{entry.title}</h4>
+                      {entry.description && <p>{entry.description}</p>}
+                      <div className="template-meta">Автор: {entry.author_username}</div>
+                      <div className="template-actions">
+                        <button
+                          className="primary-button"
+                          type="button"
+                          onClick={() => handleStartAdventure(entry.adventure_id)}
+                        >
+                          Начать
+                        </button>
+                        {isOwner && (
+                          <Link
+                            className="secondary-button"
+                            to={`/adventures/${entry.adventure_id}/edit`}
+                          >
+                            Открыть
+                          </Link>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             )}
           </section>

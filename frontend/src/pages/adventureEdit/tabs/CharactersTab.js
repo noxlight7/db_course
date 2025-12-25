@@ -16,6 +16,7 @@ function CharactersTab({
   availableSystemsForTechniques,
   characterSystems,
   characterTechniques,
+  readOnly,
 }) {
   return (
     <div className="editor-section split-panel characters-layout">
@@ -41,20 +42,22 @@ function CharactersTab({
                   setActiveCharacterId(item.id);
                 }}
               >
-                Изменить
+                {readOnly ? 'Открыть' : 'Изменить'}
               </button>
-              <button
-                className="link-button"
-                type="button"
-                onClick={() => {
-                  if (activeCharacterId === item.id) {
-                    setActiveCharacterId(null);
-                  }
-                  characters.remove(item.id);
-                }}
-              >
-                Удалить
-              </button>
+              {!readOnly && (
+                <button
+                  className="link-button"
+                  type="button"
+                  onClick={() => {
+                    if (activeCharacterId === item.id) {
+                      setActiveCharacterId(null);
+                    }
+                    characters.remove(item.id);
+                  }}
+                >
+                  Удалить
+                </button>
+              )}
             </div>
           </article>
         ))}
@@ -69,17 +72,19 @@ function CharactersTab({
               onChange={(event) =>
                 characters.setForm((prev) => ({ ...prev, title: event.target.value }))
               }
+              disabled={readOnly}
             />
           </label>
           <label>
             Описание
-            <textarea
-              rows="3"
-              value={characters.form.description}
-              onChange={(event) =>
-                characters.setForm((prev) => ({ ...prev, description: event.target.value }))
-              }
-            />
+          <textarea
+            rows="3"
+            value={characters.form.description}
+            onChange={(event) =>
+              characters.setForm((prev) => ({ ...prev, description: event.target.value }))
+            }
+            disabled={readOnly}
+          />
           </label>
           <div className="form-row">
             <label className="checkbox-row">
@@ -93,6 +98,7 @@ function CharactersTab({
                     in_party: event.target.checked ? true : prev.in_party,
                   }))
                 }
+                disabled={readOnly}
               />
               Персонаж игрока
             </label>
@@ -106,6 +112,7 @@ function CharactersTab({
                     in_party: event.target.checked,
                   }))
                 }
+                disabled={readOnly}
               />
               В партии
             </label>
@@ -113,94 +120,101 @@ function CharactersTab({
           <div className="form-row">
             <label>
               Возраст
-              <input
-                type="number"
-                min="0"
-                value={characters.form.age}
-                onChange={(event) =>
-                  characters.setForm((prev) => ({ ...prev, age: event.target.value }))
-                }
-              />
+            <input
+              type="number"
+              min="0"
+              value={characters.form.age}
+              onChange={(event) =>
+                characters.setForm((prev) => ({ ...prev, age: event.target.value }))
+              }
+              disabled={readOnly}
+            />
             </label>
             <label>
               Сила тела
-              <input
-                type="number"
-                min="0"
-                value={characters.form.body_power}
-                onChange={(event) =>
-                  characters.setForm((prev) => ({ ...prev, body_power: event.target.value }))
-                }
-              />
+            <input
+              type="number"
+              min="0"
+              value={characters.form.body_power}
+              onChange={(event) =>
+                characters.setForm((prev) => ({ ...prev, body_power: event.target.value }))
+              }
+              disabled={readOnly}
+            />
             </label>
             <label>
               Сила разума
-              <input
-                type="number"
-                min="0"
-                value={characters.form.mind_power}
-                onChange={(event) =>
-                  characters.setForm((prev) => ({ ...prev, mind_power: event.target.value }))
-                }
-              />
+            <input
+              type="number"
+              min="0"
+              value={characters.form.mind_power}
+              onChange={(event) =>
+                characters.setForm((prev) => ({ ...prev, mind_power: event.target.value }))
+              }
+              disabled={readOnly}
+            />
             </label>
             <label>
               Сила воли
-              <input
-                type="number"
-                min="0"
-                value={characters.form.will_power}
-                onChange={(event) =>
-                  characters.setForm((prev) => ({ ...prev, will_power: event.target.value }))
-                }
-              />
+            <input
+              type="number"
+              min="0"
+              value={characters.form.will_power}
+              onChange={(event) =>
+                characters.setForm((prev) => ({ ...prev, will_power: event.target.value }))
+              }
+              disabled={readOnly}
+            />
             </label>
           </div>
           <div className="form-row">
             <label>
               Прогресс тела (%)
-              <input
-                type="number"
-                min="0"
-                max="100"
-                value={characters.form.body_power_progress}
-                onChange={(event) =>
-                  characters.setForm((prev) => ({
-                    ...prev,
-                    body_power_progress: event.target.value,
-                  }))
-                }
-              />
+            <input
+              type="number"
+              min="0"
+              max="100"
+              value={characters.form.body_power_progress}
+              onChange={(event) =>
+                characters.setForm((prev) => ({
+                  ...prev,
+                  body_power_progress: event.target.value,
+                }))
+              }
+              disabled={readOnly}
+            />
             </label>
             <label>
               Прогресс разума (%)
-              <input
-                type="number"
-                min="0"
-                max="100"
-                value={characters.form.mind_power_progress}
-                onChange={(event) =>
-                  characters.setForm((prev) => ({
-                    ...prev,
-                    mind_power_progress: event.target.value,
-                  }))
-                }
-              />
+            <input
+              type="number"
+              min="0"
+              max="100"
+              value={characters.form.mind_power_progress}
+              onChange={(event) =>
+                characters.setForm((prev) => ({
+                  ...prev,
+                  mind_power_progress: event.target.value,
+                }))
+              }
+              disabled={readOnly}
+            />
             </label>
             <label>
               Прогресс воли (%)
-              <input
-                type="number"
-                min="0"
-                max="100"
-                value={characters.form.will_power_progress}
-                onChange={(event) =>
-                  characters.setForm((prev) => ({
-                    ...prev,
-                    will_power_progress: event.target.value,
-                  }))
-                }
-              />
+            <input
+              type="number"
+              min="0"
+              max="100"
+              value={characters.form.will_power_progress}
+              onChange={(event) =>
+                characters.setForm((prev) => ({
+                  ...prev,
+                  will_power_progress: event.target.value,
+                }))
+              }
+              disabled={readOnly}
+            />
             </label>
           </div>
           <div className="form-row">
@@ -211,6 +225,7 @@ function CharactersTab({
                 onChange={(event) =>
                   characters.setForm((prev) => ({ ...prev, race: event.target.value }))
                 }
+                disabled={readOnly}
               >
                 <option value="">Не выбрана</option>
                 {sortByTitle(races.items).map((race) => (
@@ -227,6 +242,7 @@ function CharactersTab({
                 onChange={(event) =>
                   characters.setForm((prev) => ({ ...prev, location: event.target.value }))
                 }
+                disabled={readOnly}
               >
                 <option value="">Не выбрана</option>
                 {sortByTitle(locations.items).map((location) => (
@@ -239,18 +255,23 @@ function CharactersTab({
           </div>
           <label>
             Теги (через запятую)
-            <input
-              value={characters.form.tags}
-              onChange={(event) =>
-                characters.setForm((prev) => ({ ...prev, tags: event.target.value }))
-              }
-            />
+          <input
+            value={characters.form.tags}
+            onChange={(event) =>
+              characters.setForm((prev) => ({ ...prev, tags: event.target.value }))
+            }
+            disabled={readOnly}
+          />
           </label>
           <div className="form-actions">
-            <button className="primary-button" type="submit" disabled={characters.saving}>
+            <button
+              className="primary-button"
+              type="submit"
+              disabled={characters.saving || readOnly}
+            >
               {characters.editingId ? 'Сохранить' : 'Добавить'}
             </button>
-            {characters.editingId && (
+            {characters.editingId && !readOnly && (
               <button
                 className="secondary-button"
                 type="button"
@@ -283,25 +304,27 @@ function CharactersTab({
                   Уровень: {item.level} • Прогресс: {item.progress_percent ?? 0}%
                 </div>
                 {item.notes && <p>{item.notes}</p>}
-                <div className="template-actions">
-                  <button
-                    className="secondary-button"
-                    type="button"
-                    onClick={() => {
-                      characterSystems.startEdit(item);
-                      setActiveCharacterId(item.character);
-                    }}
-                  >
-                    Изменить
-                  </button>
-                  <button
-                    className="link-button"
-                    type="button"
-                    onClick={() => characterSystems.remove(item.id)}
-                  >
-                    Удалить
-                  </button>
-                </div>
+                {!readOnly && (
+                  <div className="template-actions">
+                    <button
+                      className="secondary-button"
+                      type="button"
+                      onClick={() => {
+                        characterSystems.startEdit(item);
+                        setActiveCharacterId(item.character);
+                      }}
+                    >
+                      Изменить
+                    </button>
+                    <button
+                      className="link-button"
+                      type="button"
+                      onClick={() => characterSystems.remove(item.id)}
+                    >
+                      Удалить
+                    </button>
+                  </div>
+                )}
               </article>
             ))}
           </div>
@@ -326,7 +349,7 @@ function CharactersTab({
                     system: event.target.value,
                   }))
                 }
-                disabled={!activeCharacterId}
+                disabled={!activeCharacterId || readOnly}
               >
                 <option value="">Выберите систему</option>
                 {sortByTitle(systems.items).map((system) => (
@@ -348,7 +371,7 @@ function CharactersTab({
                     level: event.target.value,
                   }))
                 }
-                disabled={!activeCharacterId}
+                disabled={!activeCharacterId || readOnly}
               />
             </label>
             <label>
@@ -364,7 +387,7 @@ function CharactersTab({
                     progress_percent: event.target.value,
                   }))
                 }
-                disabled={!activeCharacterId}
+                disabled={!activeCharacterId || readOnly}
               />
             </label>
             <label>
@@ -378,18 +401,18 @@ function CharactersTab({
                     notes: event.target.value,
                   }))
                 }
-                disabled={!activeCharacterId}
+                disabled={!activeCharacterId || readOnly}
               />
             </label>
             <div className="form-actions">
               <button
                 className="primary-button"
                 type="submit"
-                disabled={characterSystems.saving || !activeCharacterId}
+                disabled={characterSystems.saving || !activeCharacterId || readOnly}
               >
                 {characterSystems.editingId ? 'Сохранить' : 'Добавить'}
               </button>
-              {characterSystems.editingId && (
+              {characterSystems.editingId && !readOnly && (
                 <button
                   className="secondary-button"
                   type="button"
@@ -417,25 +440,27 @@ function CharactersTab({
                   Прием: {techniques.items.find((technique) => technique.id === item.technique)?.title || '—'}
                 </div>
                 {item.notes && <p>{item.notes}</p>}
-                <div className="template-actions">
-                  <button
-                    className="secondary-button"
-                    type="button"
-                    onClick={() => {
-                      characterTechniques.startEdit(item);
-                      setActiveCharacterId(item.character);
-                    }}
-                  >
-                    Изменить
-                  </button>
-                  <button
-                    className="link-button"
-                    type="button"
-                    onClick={() => characterTechniques.remove(item.id)}
-                  >
-                    Удалить
-                  </button>
-                </div>
+                {!readOnly && (
+                  <div className="template-actions">
+                    <button
+                      className="secondary-button"
+                      type="button"
+                      onClick={() => {
+                        characterTechniques.startEdit(item);
+                        setActiveCharacterId(item.character);
+                      }}
+                    >
+                      Изменить
+                    </button>
+                    <button
+                      className="link-button"
+                      type="button"
+                      onClick={() => characterTechniques.remove(item.id)}
+                    >
+                      Удалить
+                    </button>
+                  </div>
+                )}
               </article>
             ))}
           </div>
@@ -463,7 +488,7 @@ function CharactersTab({
                     technique: '',
                   }))
                 }
-                disabled={!activeCharacterId}
+                disabled={!activeCharacterId || readOnly}
               >
                 <option value="">Выберите систему</option>
                 {sortByTitle(availableSystemsForTechniques).map((system) => (
@@ -483,7 +508,7 @@ function CharactersTab({
                     technique: event.target.value,
                   }))
                 }
-                disabled={!activeCharacterId || !characterTechniques.form.system}
+                disabled={!activeCharacterId || !characterTechniques.form.system || readOnly}
               >
                 <option value="">Выберите прием</option>
                 {sortByTitle(
@@ -510,18 +535,18 @@ function CharactersTab({
                     notes: event.target.value,
                   }))
                 }
-                disabled={!activeCharacterId}
+                disabled={!activeCharacterId || readOnly}
               />
             </label>
             <div className="form-actions">
               <button
                 className="primary-button"
                 type="submit"
-                disabled={characterTechniques.saving || !activeCharacterId}
+                disabled={characterTechniques.saving || !activeCharacterId || readOnly}
               >
                 {characterTechniques.editingId ? 'Сохранить' : 'Добавить'}
               </button>
-              {characterTechniques.editingId && (
+              {characterTechniques.editingId && !readOnly && (
                 <button
                   className="secondary-button"
                   type="button"

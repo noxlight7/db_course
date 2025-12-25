@@ -8,6 +8,8 @@ from rest_framework import serializers
 from .models import (
     Adventure,
     AdventureHeroSetup,
+    ModerationEntry,
+    PublishedAdventure,
     Character,
     CharacterSystem,
     CharacterTechnique,
@@ -25,6 +27,11 @@ from .models import (
 class AdventureTemplateSerializer(serializers.ModelSerializer):
     """Serializer for listing/creating adventure templates."""
 
+    is_under_moderation = serializers.SerializerMethodField()
+    is_published = serializers.SerializerMethodField()
+    can_edit = serializers.SerializerMethodField()
+    author_username = serializers.CharField(source="author_user.username", read_only=True)
+
     class Meta:
         model = Adventure
         fields = (
@@ -36,8 +43,20 @@ class AdventureTemplateSerializer(serializers.ModelSerializer):
             "primary_hero",
             "created_at",
             "updated_at",
+            "is_under_moderation",
+            "is_published",
+            "can_edit",
+            "author_username",
         )
-        read_only_fields = ("id", "created_at", "updated_at")
+        read_only_fields = (
+            "id",
+            "created_at",
+            "updated_at",
+            "is_under_moderation",
+            "is_published",
+            "can_edit",
+            "author_username",
+        )
 
     def create(self, validated_data: dict) -> Adventure:
         user = self.context["request"].user
@@ -61,6 +80,47 @@ class AdventureTemplateSerializer(serializers.ModelSerializer):
                 {"primary_hero": "Главный герой принадлежит другому приключению."}
             )
         return attrs
+
+    def get_is_under_moderation(self, obj: Adventure) -> bool:
+        try:
+            obj.moderation_entry
+            return True
+        except ModerationEntry.DoesNotExist:
+            return False
+
+    def get_is_published(self, obj: Adventure) -> bool:
+        try:
+            obj.publication_entry
+            return True
+        except PublishedAdventure.DoesNotExist:
+            return False
+
+    def get_can_edit(self, obj: Adventure) -> bool:
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        return obj.author_user_id == request.user.id
+
+
+class ModerationEntrySerializer(serializers.ModelSerializer):
+    adventure_id = serializers.IntegerField(source="adventure.id", read_only=True)
+    title = serializers.CharField(source="adventure.title", read_only=True)
+    author_username = serializers.CharField(source="adventure.author_user.username", read_only=True)
+
+    class Meta:
+        model = ModerationEntry
+        fields = ("adventure_id", "title", "author_username", "submitted_at")
+
+
+class PublishedAdventureSerializer(serializers.ModelSerializer):
+    adventure_id = serializers.IntegerField(source="adventure.id", read_only=True)
+    title = serializers.CharField(source="adventure.title", read_only=True)
+    description = serializers.CharField(source="adventure.description", read_only=True)
+    author_username = serializers.CharField(source="adventure.author_user.username", read_only=True)
+
+    class Meta:
+        model = PublishedAdventure
+        fields = ("adventure_id", "title", "description", "author_username", "published_at")
 
 
 class AdventureHeroSetupSerializer(serializers.ModelSerializer):

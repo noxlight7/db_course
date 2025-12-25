@@ -2,7 +2,7 @@ import React from 'react';
 
 import { formatTags } from '../utils';
 
-function SystemsTab({ systems }) {
+function SystemsTab({ systems, readOnly }) {
   return (
     <div className="editor-section split-panel">
       <div className="editor-list">
@@ -16,14 +16,20 @@ function SystemsTab({ systems }) {
             </div>
             {item.formula_hint && <div className="template-meta">Формула: {item.formula_hint}</div>}
             <div className="template-meta">Теги: {formatTags(item.tags) || '—'}</div>
-            <div className="template-actions">
-              <button className="secondary-button" type="button" onClick={() => systems.startEdit(item)}>
-                Изменить
-              </button>
-              <button className="link-button" type="button" onClick={() => systems.remove(item.id)}>
-                Удалить
-              </button>
-            </div>
+            {!readOnly && (
+              <div className="template-actions">
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={() => systems.startEdit(item)}
+                >
+                  Изменить
+                </button>
+                <button className="link-button" type="button" onClick={() => systems.remove(item.id)}>
+                  Удалить
+                </button>
+              </div>
+            )}
           </article>
         ))}
       </div>
@@ -34,6 +40,7 @@ function SystemsTab({ systems }) {
           <input
             value={systems.form.title}
             onChange={(event) => systems.setForm((prev) => ({ ...prev, title: event.target.value }))}
+            disabled={readOnly}
           />
         </label>
         <label>
@@ -42,6 +49,7 @@ function SystemsTab({ systems }) {
             rows="3"
             value={systems.form.description}
             onChange={(event) => systems.setForm((prev) => ({ ...prev, description: event.target.value }))}
+            disabled={readOnly}
           />
         </label>
         <div className="form-row">
@@ -52,6 +60,7 @@ function SystemsTab({ systems }) {
               min="0"
               value={systems.form.w_body}
               onChange={(event) => systems.setForm((prev) => ({ ...prev, w_body: event.target.value }))}
+              disabled={readOnly}
             />
           </label>
           <label>
@@ -61,6 +70,7 @@ function SystemsTab({ systems }) {
               min="0"
               value={systems.form.w_mind}
               onChange={(event) => systems.setForm((prev) => ({ ...prev, w_mind: event.target.value }))}
+              disabled={readOnly}
             />
           </label>
           <label>
@@ -70,6 +80,7 @@ function SystemsTab({ systems }) {
               min="0"
               value={systems.form.w_will}
               onChange={(event) => systems.setForm((prev) => ({ ...prev, w_will: event.target.value }))}
+              disabled={readOnly}
             />
           </label>
         </div>
@@ -81,6 +92,7 @@ function SystemsTab({ systems }) {
             onChange={(event) =>
               systems.setForm((prev) => ({ ...prev, formula_hint: event.target.value }))
             }
+            disabled={readOnly}
           />
         </label>
         <label>
@@ -88,13 +100,14 @@ function SystemsTab({ systems }) {
           <input
             value={systems.form.tags}
             onChange={(event) => systems.setForm((prev) => ({ ...prev, tags: event.target.value }))}
+            disabled={readOnly}
           />
         </label>
         <div className="form-actions">
-          <button className="primary-button" type="submit" disabled={systems.saving}>
+          <button className="primary-button" type="submit" disabled={systems.saving || readOnly}>
             {systems.editingId ? 'Сохранить' : 'Добавить'}
           </button>
-          {systems.editingId && (
+          {systems.editingId && !readOnly && (
             <button className="secondary-button" type="button" onClick={systems.resetForm}>
               Отмена
             </button>

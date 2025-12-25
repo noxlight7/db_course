@@ -20,6 +20,8 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
   const [activeTab, setActiveTab] = useState('general');
   const [activeCharacterId, setActiveCharacterId] = useState(null);
   const [adventure, setAdventure] = useState(null);
+  const [submitError, setSubmitError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [generalForm, setGeneralForm] = useState({
     title: '',
     description: '',
@@ -50,11 +52,13 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
   const baseEndpoint = `${apiBaseUrl}/api/adventures/${entityScope}/${adventureId}/`;
   const heroSetupEndpoint = `${baseEndpoint}hero-setup/`;
   const isTemplate = entityScope === 'templates';
+  const readOnly = Boolean(adventure && adventure.can_edit === false);
 
   const locations = useAdventureEntity({
     adventureId,
     endpoint: `${baseEndpoint}locations/`,
     authRequest,
+    readOnly,
     initialForm: {
       title: '',
       description: '',
@@ -88,6 +92,7 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
     adventureId,
     endpoint: `${baseEndpoint}races/`,
     authRequest,
+    readOnly,
     initialForm: {
       title: '',
       description: '',
@@ -112,6 +117,7 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
     adventureId,
     endpoint: `${baseEndpoint}systems/`,
     authRequest,
+    readOnly,
     initialForm: {
       title: '',
       description: '',
@@ -145,6 +151,7 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
     adventureId,
     endpoint: `${baseEndpoint}techniques/`,
     authRequest,
+    readOnly,
     initialForm: {
       system: '',
       title: '',
@@ -180,6 +187,7 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
     adventureId,
     endpoint: `${baseEndpoint}factions/`,
     authRequest,
+    readOnly,
     initialForm: {
       title: '',
       description: '',
@@ -201,6 +209,7 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
     adventureId,
     endpoint: `${baseEndpoint}events/`,
     authRequest,
+    readOnly,
     initialForm: {
       title: '',
       status: 'inactive',
@@ -228,6 +237,7 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
     adventureId,
     endpoint: `${baseEndpoint}other-info/`,
     authRequest,
+    readOnly,
     initialForm: {
       category: '',
       title: '',
@@ -252,6 +262,7 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
     adventureId,
     endpoint: `${baseEndpoint}characters/`,
     authRequest,
+    readOnly,
     initialForm: {
       title: '',
       description: '',
@@ -309,6 +320,7 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
     adventureId,
     endpoint: `${baseEndpoint}character-systems/`,
     authRequest,
+    readOnly,
     initialForm: {
       system: '',
       level: '0',
@@ -334,6 +346,7 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
     adventureId,
     endpoint: `${baseEndpoint}character-techniques/`,
     authRequest,
+    readOnly,
     initialForm: {
       system: '',
       technique: '',
@@ -450,12 +463,14 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
   })();
 
   const handleGeneralChange = (event) => {
+    if (readOnly) return;
     const { name, value } = event.target;
     setGeneralForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const saveGeneral = async (event) => {
     event.preventDefault();
+    if (readOnly) return;
     setGeneralError('');
     setSavingGeneral(true);
     try {
@@ -481,6 +496,7 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
   const saveHeroSetup = async (event) => {
     event.preventDefault();
     if (!isTemplate) return;
+    if (readOnly) return;
     setHeroSetupError('');
     setSavingHeroSetup(true);
     try {
@@ -539,6 +555,30 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
     }
   };
 
+  const canSubmitForModeration =
+    isTemplate &&
+    adventure &&
+    adventure.can_edit &&
+    !adventure.is_under_moderation &&
+    !adventure.is_published;
+
+  const handleSubmitForModeration = async () => {
+    if (!canSubmitForModeration) return;
+    setSubmitError('');
+    setSubmitting(true);
+    try {
+      await authRequest({
+        method: 'post',
+        url: `${apiBaseUrl}/api/adventures/templates/${adventureId}/submit/`,
+      });
+      setAdventure((prev) => (prev ? { ...prev, is_under_moderation: true } : prev));
+    } catch (error) {
+      setSubmitError('Не удалось отправить приключение на модерацию.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (!user) {
     return <h2>Авторизуйтесь, чтобы редактировать приключения.</h2>;
   }
@@ -548,7 +588,17 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
       <div className="editor-header">
         <div>
           <h2>{adventure ? adventure.title : 'Редактирование приключения'}</h2>
-          <p className="editor-subtitle">Настройте все элементы шаблона по вкладкам ниже.</p>
+          <p className="editor-subtitle">
+            {readOnly
+              ? 'Режим просмотра: изменения недоступны.'
+              : 'Настройте все элементы шаблона по вкладкам ниже.'}
+          </p>
+          {adventure?.is_under_moderation && (
+            <p className="template-meta">Отправлено на модерацию.</p>
+          )}
+          {adventure?.is_published && (
+            <p className="template-meta">Приключение опубликовано.</p>
+          )}
         </div>
         <Link className="secondary-button" to="/">
           Назад к списку
@@ -580,6 +630,11 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
             exportError={exportError}
             exporting={exporting}
             handleExportAdventure={handleExportAdventure}
+            readOnly={readOnly}
+            canSubmitForModeration={canSubmitForModeration}
+            submittingModeration={submitting}
+            submitModerationError={submitError}
+            handleSubmitForModeration={handleSubmitForModeration}
             characters={characters}
             heroSetupSummary={heroSetupSummary}
             heroSetupForm={heroSetupForm}
@@ -591,7 +646,7 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
             races={races}
           />
         )}
-        {activeTab === 'locations' && <LocationsTab locations={locations} />}
+        {activeTab === 'locations' && <LocationsTab locations={locations} readOnly={readOnly} />}
         {activeTab === 'characters' && (
           <CharactersTab
             characters={characters}
@@ -607,14 +662,19 @@ function AdventureEditPage({ user, apiBaseUrl, authRequest, entityScope = 'templ
             availableSystemsForTechniques={availableSystemsForTechniques}
             characterSystems={characterSystems}
             characterTechniques={characterTechniques}
+            readOnly={readOnly}
           />
         )}
-        {activeTab === 'races' && <RacesTab races={races} />}
-        {activeTab === 'systems' && <SystemsTab systems={systems} />}
-        {activeTab === 'techniques' && <TechniquesTab techniques={techniques} systems={systems} />}
-        {activeTab === 'events' && <EventsTab events={events} locations={locations} />}
-        {activeTab === 'factions' && <FactionsTab factions={factions} />}
-        {activeTab === 'other' && <OtherInfoTab otherInfo={otherInfo} />}
+        {activeTab === 'races' && <RacesTab races={races} readOnly={readOnly} />}
+        {activeTab === 'systems' && <SystemsTab systems={systems} readOnly={readOnly} />}
+        {activeTab === 'techniques' && (
+          <TechniquesTab techniques={techniques} systems={systems} readOnly={readOnly} />
+        )}
+        {activeTab === 'events' && (
+          <EventsTab events={events} locations={locations} readOnly={readOnly} />
+        )}
+        {activeTab === 'factions' && <FactionsTab factions={factions} readOnly={readOnly} />}
+        {activeTab === 'other' && <OtherInfoTab otherInfo={otherInfo} readOnly={readOnly} />}
       </div>
     </div>
   );

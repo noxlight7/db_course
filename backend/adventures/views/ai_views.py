@@ -95,10 +95,24 @@ class AdventureRunHeroPromptView(AdventureRunMixin, APIView):
             )
         except ValueError as exc:
             _set_ai_waiting(adventure.id, False)
-            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {
+                    "detail": str(exc),
+                    "user_entry": AdventureHistorySerializer(user_entry).data,
+                    "ai_entry": None,
+                },
+                status=status.HTTP_201_CREATED,
+            )
         except Exception:
             _set_ai_waiting(adventure.id, False)
-            return Response({"detail": "Model response failed."}, status=status.HTTP_502_BAD_GATEWAY)
+            return Response(
+                {
+                    "detail": "Model response failed.",
+                    "user_entry": AdventureHistorySerializer(user_entry).data,
+                    "ai_entry": None,
+                },
+                status=status.HTTP_201_CREATED,
+            )
         _set_ai_waiting(adventure.id, False)
         return Response(
             {

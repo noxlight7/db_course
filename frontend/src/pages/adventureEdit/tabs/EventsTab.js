@@ -2,7 +2,7 @@ import React from 'react';
 
 import { sortByTitle } from '../utils';
 
-function EventsTab({ events, locations }) {
+function EventsTab({ events, locations, readOnly }) {
   return (
     <div className="editor-section split-panel">
       <div className="editor-list">
@@ -19,14 +19,20 @@ function EventsTab({ events, locations }) {
             </div>
             {item.trigger_hint && <p>Триггер: {item.trigger_hint}</p>}
             {item.state && <div className="template-meta">Состояние: {item.state}</div>}
-            <div className="template-actions">
-              <button className="secondary-button" type="button" onClick={() => events.startEdit(item)}>
-                Изменить
-              </button>
-              <button className="link-button" type="button" onClick={() => events.remove(item.id)}>
-                Удалить
-              </button>
-            </div>
+            {!readOnly && (
+              <div className="template-actions">
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={() => events.startEdit(item)}
+                >
+                  Изменить
+                </button>
+                <button className="link-button" type="button" onClick={() => events.remove(item.id)}>
+                  Удалить
+                </button>
+              </div>
+            )}
           </article>
         ))}
       </div>
@@ -37,6 +43,7 @@ function EventsTab({ events, locations }) {
           <input
             value={events.form.title}
             onChange={(event) => events.setForm((prev) => ({ ...prev, title: event.target.value }))}
+            disabled={readOnly}
           />
         </label>
         <label>
@@ -44,6 +51,7 @@ function EventsTab({ events, locations }) {
           <select
             value={events.form.status}
             onChange={(event) => events.setForm((prev) => ({ ...prev, status: event.target.value }))}
+            disabled={readOnly}
           >
             <option value="inactive">inactive</option>
             <option value="active">active</option>
@@ -55,6 +63,7 @@ function EventsTab({ events, locations }) {
           <select
             value={events.form.location}
             onChange={(event) => events.setForm((prev) => ({ ...prev, location: event.target.value }))}
+            disabled={readOnly}
           >
             <option value="">Глобальное</option>
             {sortByTitle(locations.items).map((location) => (
@@ -70,6 +79,7 @@ function EventsTab({ events, locations }) {
             rows="2"
             value={events.form.trigger_hint}
             onChange={(event) => events.setForm((prev) => ({ ...prev, trigger_hint: event.target.value }))}
+            disabled={readOnly}
           />
         </label>
         <label>
@@ -78,13 +88,14 @@ function EventsTab({ events, locations }) {
             rows="2"
             value={events.form.state}
             onChange={(event) => events.setForm((prev) => ({ ...prev, state: event.target.value }))}
+            disabled={readOnly}
           />
         </label>
         <div className="form-actions">
-          <button className="primary-button" type="submit" disabled={events.saving}>
+          <button className="primary-button" type="submit" disabled={events.saving || readOnly}>
             {events.editingId ? 'Сохранить' : 'Добавить'}
           </button>
-          {events.editingId && (
+          {events.editingId && !readOnly && (
             <button className="secondary-button" type="button" onClick={events.resetForm}>
               Отмена
             </button>
