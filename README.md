@@ -1,103 +1,109 @@
-# Game Client‑Server Skeleton
+# Stories Online
 
-This repository contains a minimal client–server application scaffold for a game featuring neural network gameplay. The goal of this project is to provide a starting point for development rather than a complete production system. It includes:
+Веб‑приложение для создания и прохождения текстовых приключений с генерацией истории через LLM. Шаблоны приключений можно редактировать, публиковать, запускать для игроков и вести историю прохождения.
 
-* **Backend** — A Django REST API with PostgreSQL for persistent storage, token‑based authentication (JWT) using Simple JWT and custom user registration.
-* **Frontend** — A React application that presents a home screen with a header, login form and registration form. Tokens obtained from the backend are stored on the client and attached to subsequent API requests.
+## Возможности
 
-> **Note**: Secrets such as database credentials and token lifetimes are loaded from a `.env` file. Only `.env.example` is committed to version control; create your own `.env` when running the application locally.
+- Шаблоны приключений: локации, расы, системы и техники, фракции, события, персонажи и прочая информация.
+- Запуск приключений (runs) из шаблонов с копированием всех сущностей.
+- Настройка главного героя перед стартом.
+- Экран игры с историей: ввод реплик/действий, генерация следующего шага, откат истории, регенерация последнего ответа, экспорт в PDF.
+- Импорт/экспорт шаблонов в JSON.
+- Модерация и публикация приключений (роли администратора).
+- JWT‑аутентификация, вход по имени пользователя или email.
 
-## Directory Structure
+## Структура репозитория
 
 ```text
-game_app/
-├── .env.example         # Template for environment variables
-├── backend/             # Django REST API
-│   ├── backend/         # Django project package
-│   │   ├── __init__.py
-│   │   ├── asgi.py
-│   │   ├── settings.py
-│   │   ├── urls.py
-│   │   └── wsgi.py
-│   ├── manage.py
-│   ├── requirements.txt # Python dependencies
-│   └── users/           # Custom user app
-│       ├── __init__.py
-│       ├── admin.py
-│       ├── models.py
-│       ├── serializers.py
-│       ├── urls.py
-│       └── views.py
-└── frontend/            # React client (see below)
+.
+├── backend/              # Django + DRF API
+├── frontend/             # React клиент
+├── scripts/              # Скрипты резервного копирования БД
+├── backups/              # Папка для дампов БД
+├── docker-compose.yml
+└── .env.example
 ```
 
-## Backend Overview
+## Быстрый старт через Docker
 
-The backend is built with **Django** and **Django REST Framework**. It defines a custom `User` model that extends Django's `AbstractUser` by adding a `credits` field. User registration is implemented via a dedicated API endpoint (`/api/users/register/`). Authentication uses JSON Web Tokens (JWT) with access tokens expiring after 15 minutes and refresh tokens expiring after 30 days (configurable via the `.env` file).
+1) Скопируйте `.env.example` в `.env` и при необходимости обновите значения.
 
-### Running the Backend
+2) Соберите и запустите сервисы:
 
-1. Create a virtual environment and install dependencies:
+```bash
+docker compose up --build
+```
 
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r backend/requirements.txt
-   ```
+Сервисы поднимутся на `http://localhost:8000` (backend) и `http://localhost:3000` (frontend). Контейнер `db_backup` делает дамп при старте и далее ежедневно в 03:00, сохраняя файлы в `backups/`.
 
-2. Copy `.env.example` to `.env` and update the values for your local setup.
+## Локальная разработка
 
-3. Apply migrations and create a superuser:
+### Backend
 
-   ```bash
-   cd backend
-   python manage.py migrate
-   python manage.py createsuperuser
-   ```
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r backend/requirements.txt
 
-4. Run the development server:
+cd backend
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
 
-   ```bash
-   python manage.py runserver
-   ```
+Backend доступен на `http://localhost:8000/`.
 
-The API will be available at `http://localhost:8000/`.
+### Frontend
 
-## Frontend Overview
+```bash
+cd frontend
+npm install
+cp .env.example .env
+npm start
+```
 
-The frontend lives in the `frontend/` directory and is built with **React**. It displays a simple home page with a header. The left side of the header has a “Play” button placeholder and the right side has a “Login” button. Clicking “Login” opens a modal with a form for entering a username and password as well as a toggle for switching to a registration form. Registration includes fields for username, email, password and confirmation. After successful login or registration, the user is returned to the home page with the JWT stored locally to authorize future requests.
+Frontend доступен на `http://localhost:3000/`.
 
-### Running the Frontend
+## Конфигурация окружения
 
-1. Change into the `frontend` directory:
+Основные переменные задаются в `.env` (см. `.env.example`).
 
-   ```bash
-   cd frontend
-   ```
+- `REACT_APP_API_URL` — адрес API для фронтенда.
+- `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `ALLOWED_ORIGINS` — базовые настройки Django.
+- `POSTGRES_*` — параметры подключения к БД.
+- `ACCESS_TOKEN_LIFETIME_MINUTES`, `REFRESH_TOKEN_LIFETIME_DAYS` — сроки жизни JWT.
 
-2. Install the dependencies:
+### LLM
 
-   ```bash
-   npm install
-   ```
+Поддерживаются несколько провайдеров (см. `backend/backend/llm.py`):
 
-3. Copy `.env.example` to `.env` and specify the API base URL (e.g. `REACT_APP_API_URL=http://localhost:8000`).
+- `LLM_PROVIDER=local` — локальный echo‑клиент (по умолчанию, для разработки).
+- `LLM_PROVIDER=openai-compatible` — OpenAI‑совместимый endpoint, нужны `LLM_BASE_URL` и `LLM_API_KEY`.
+- `LLM_PROVIDER=ollama` — локальный Ollama сервер, нужен `OLLAMA_URL` и опционально `OLLAMA_MODEL`.
+- `LLM_PROVIDER=yandex` — YandexGPT, нужны `YC_API_KEY`/`YANDEX_CLOUD_API_KEY` и `YC_FOLDER_ID`/`YANDEX_CLOUD_FOLDER`.
 
-4. Start the development server:
+Дополнительно:
+`LLM_MODEL`, `LLM_TEMPERATURE`, `LLM_MAX_TOKENS`, `LLM_TIMEOUT_SECONDS`.
 
-   ```bash
-   npm start
-   ```
+## Администраторы и модерация
 
-The React application will be accessible at `http://localhost:3000/`.
+Доступ к страницам `/admin` и `/moderation` есть только у пользователей с профилем администратора (уровни 1+). Уровни администраторов можно назначать через Django admin или напрямую в БД, создавая запись `Administrator` для нужного пользователя.
 
-## Extending This Project
+## Основные маршруты UI
 
-This skeleton is intentionally minimal. Future improvements might include:
+- `/` — список шаблонов, запусков и опубликованных приключений.
+- `/adventures/:id/edit` — редактор шаблона приключения.
+- `/adventures/runs/:id/edit` — редактор запущенного приключения.
+- `/adventures/:id/hero` — создание главного героя.
+- `/adventures/:id/play` — игровой экран с историей.
+- `/admin` — управление администраторами (уровни доступа).
+- `/moderation` — очередь модерации и опубликованные приключения.
 
-* Persisting refresh tokens in HTTP‑only cookies for improved security.
-* Implementing email verification and password reset functionality.
-* Adding game logic and integration with neural network APIs.
-* Introducing a dedicated `play/` route and managing game state on the frontend.
+## Минимальный сценарий
 
-Contributions and feedback are welcome!
+1) Создайте шаблон приключения на главной странице (`/`), заполните данные в редакторе (`/adventures/:id/edit`).
+2) Отправьте шаблон на модерацию (кнопка в редакторе, требуется администратор).
+3) Модератор публикует шаблон на странице `/moderation`.
+4) Вернитесь на главную, в разделе «Опубликованные приключения» нажмите «Начать».
+5) Если герой не создан, заполните форму на `/adventures/:id/hero`.
+6) Перейдите в игру на `/adventures/:id/play`.
