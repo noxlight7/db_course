@@ -340,7 +340,6 @@ class Technique(models.Model):
             ),
         ]
         indexes = [
-            models.Index(fields=["system"], name="idx_techniques_system"),
             GinIndex(fields=["tags"], name="idx_techniques_tags_gin"),
         ]
 
@@ -413,9 +412,6 @@ class CharacterSystem(models.Model):
                 condition=Q(progress_percent__gte=0) & Q(progress_percent__lte=100),
             ),
         ]
-        indexes = [
-            models.Index(fields=["character"], name="idx_char_systems_char"),
-        ]
 
     def clean(self) -> None:
         if (
@@ -448,9 +444,6 @@ class CharacterTechnique(models.Model):
                 name="uq_character_technique",
             ),
         ]
-        indexes = [
-            models.Index(fields=["character"], name="idx_char_techniques_char"),
-        ]
 
     def clean(self) -> None:
         if self.character_id and self.technique_id:
@@ -460,7 +453,6 @@ class CharacterTechnique(models.Model):
 
 class CharacterFaction(models.Model):
     id = models.BigAutoField(primary_key=True)
-    adventure = models.ForeignKey(Adventure, on_delete=models.CASCADE, related_name="character_factions")
     character = models.ForeignKey(
         Character,
         on_delete=models.CASCADE,
@@ -471,31 +463,21 @@ class CharacterFaction(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["adventure", "character", "faction"],
+                fields=["character", "faction"],
                 name="uq_characters_factions",
             ),
         ]
         indexes = [
-            models.Index(fields=["adventure"], name="idx_characters_factions_adv"),
+            models.Index(fields=["character"], name="idx_char_factions_char"),
         ]
 
     def clean(self) -> None:
-        if (
-            self.character_id
-            and self.adventure_id
-            and self.character.adventure_id != self.adventure_id
-        ):
-            raise ValidationError("Character adventure mismatch.")
-        if self.faction_id and self.adventure_id and self.faction.adventure_id != self.adventure_id:
-            raise ValidationError("Faction adventure mismatch.")
+        if self.character_id and self.faction_id:
+            if self.character.adventure_id != self.faction.adventure_id:
+                raise ValidationError("Character/faction adventure mismatch.")
 
 
 class CharacterRelationship(models.Model):
-    adventure = models.ForeignKey(
-        Adventure,
-        on_delete=models.CASCADE,
-        related_name="character_relationships",
-    )
     from_character = models.ForeignKey(
         Character,
         on_delete=models.CASCADE,
@@ -518,29 +500,20 @@ class CharacterRelationship(models.Model):
                 condition=~Q(from_character=F("to_character")),
             ),
             models.UniqueConstraint(
-                fields=["adventure", "from_character", "to_character", "kind"],
+                fields=["from_character", "to_character", "kind"],
                 name="uq_relationship",
             ),
         ]
         indexes = [
-            models.Index(fields=["adventure", "from_character"], name="idx_rel_from"),
-            models.Index(fields=["adventure", "to_character"], name="idx_rel_to"),
-            models.Index(fields=["adventure", "kind"], name="idx_rel_kind"),
+            models.Index(fields=["from_character"], name="idx_rel_from_char"),
+            models.Index(fields=["to_character"], name="idx_rel_to_char"),
+            models.Index(fields=["kind"], name="idx_rel_kind"),
         ]
 
     def clean(self) -> None:
-        if (
-            self.from_character_id
-            and self.adventure_id
-            and self.from_character.adventure_id != self.adventure_id
-        ):
-            raise ValidationError("From-character adventure mismatch.")
-        if (
-            self.to_character_id
-            and self.adventure_id
-            and self.to_character.adventure_id != self.adventure_id
-        ):
-            raise ValidationError("To-character adventure mismatch.")
+        if self.from_character_id and self.to_character_id:
+            if self.from_character.adventure_id != self.to_character.adventure_id:
+                raise ValidationError("Relationship adventure mismatch.")
 
 
 class AdventureHistory(models.Model):

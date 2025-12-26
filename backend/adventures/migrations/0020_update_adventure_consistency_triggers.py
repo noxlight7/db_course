@@ -74,5 +74,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(DROP_TRIGGERS_SQL + CREATE_TRIGGERS_SQL, reverse_sql=migrations.RunSQL.noop),
+        migrations.RunSQL(DROP_TRIGGERS_SQL + CREATE_TRIGGERS_SQL, reverse_sql=DROP_TRIGGERS_SQL),
     ]
