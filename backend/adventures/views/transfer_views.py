@@ -56,7 +56,7 @@ class AdventureTemplateExportView(AdventureTemplateMixin, APIView):
             ["title", "description", "tags", "w_body", "w_mind", "w_will", "formula_hint"],
         )
         techniques, technique_map = _build_export_list(
-            Technique.objects.filter(adventure=adventure).order_by("title"),
+            Technique.objects.filter(system__adventure=adventure).order_by("title"),
             ["title", "description", "tags", "difficulty", "tier", "required_system_level"],
         )
         factions, faction_map = _build_export_list(
@@ -100,7 +100,9 @@ class AdventureTemplateExportView(AdventureTemplateMixin, APIView):
             entry["location"] = location_map.get(event.location_id)
 
         character_systems = []
-        for entry in CharacterSystem.objects.filter(adventure=adventure).order_by("id"):
+        for entry in CharacterSystem.objects.filter(
+            character__adventure=adventure
+        ).order_by("id"):
             character_systems.append(
                 {
                     "character": character_map.get(entry.character_id),
@@ -112,7 +114,9 @@ class AdventureTemplateExportView(AdventureTemplateMixin, APIView):
             )
 
         character_techniques = []
-        for entry in CharacterTechnique.objects.filter(adventure=adventure).order_by("id"):
+        for entry in CharacterTechnique.objects.filter(
+            character__adventure=adventure
+        ).order_by("id"):
             character_techniques.append(
                 {
                     "character": character_map.get(entry.character_id),
@@ -228,7 +232,6 @@ class AdventureTemplateImportView(APIView):
                 if system is None:
                     continue
                 technique = Technique.objects.create(
-                    adventure=adventure,
                     system=system,
                     title=entry.get("title", ""),
                     description=entry.get("description", ""),
@@ -293,7 +296,6 @@ class AdventureTemplateImportView(APIView):
                 if character is None or system is None:
                     continue
                 CharacterSystem.objects.create(
-                    adventure=adventure,
                     character=character,
                     system=system,
                     level=entry.get("level", 0),
@@ -307,7 +309,6 @@ class AdventureTemplateImportView(APIView):
                 if character is None or technique is None:
                     continue
                 CharacterTechnique.objects.create(
-                    adventure=adventure,
                     character=character,
                     technique=technique,
                     notes=entry.get("notes", ""),

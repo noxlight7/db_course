@@ -96,7 +96,9 @@ def _apply_card_updates(adventure: Adventure, payload: dict) -> None:
             record_id = entry.get("id")
             if not record_id:
                 continue
-            record = CharacterSystem.objects.filter(adventure=adventure, id=record_id).first()
+            record = CharacterSystem.objects.filter(
+                character__adventure=adventure, id=record_id
+            ).first()
             if record is None:
                 continue
             update_fields = []
@@ -131,7 +133,9 @@ def _apply_card_updates(adventure: Adventure, payload: dict) -> None:
             record_id = entry.get("id")
             if not record_id:
                 continue
-            record = CharacterTechnique.objects.filter(adventure=adventure, id=record_id).first()
+            record = CharacterTechnique.objects.filter(
+                character__adventure=adventure, id=record_id
+            ).first()
             if record is None:
                 continue
             if "notes" in entry and isinstance(entry.get("notes"), str):

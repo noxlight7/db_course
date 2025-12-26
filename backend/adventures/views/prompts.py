@@ -60,13 +60,13 @@ def _build_generation_prompt(
     )
     systems = SkillSystem.objects.filter(adventure=adventure).order_by("title")
     system_map = {system.id: system for system in systems}
-    techniques = Technique.objects.filter(adventure=adventure).order_by("title")
+    techniques = Technique.objects.filter(system__adventure=adventure).order_by("title")
     technique_map = {technique.id: technique for technique in techniques}
     character_systems = {}
-    for entry in CharacterSystem.objects.filter(adventure=adventure):
+    for entry in CharacterSystem.objects.filter(character__adventure=adventure):
         character_systems.setdefault(entry.character_id, []).append(entry)
     character_techniques = {}
-    for entry in CharacterTechnique.objects.filter(adventure=adventure):
+    for entry in CharacterTechnique.objects.filter(character__adventure=adventure):
         character_techniques.setdefault(entry.character_id, []).append(entry)
 
     available_systems_text = "Доступные системы: " + (
@@ -217,7 +217,7 @@ def _build_card_update_prompt(
         .values("id", "title", "description", "tags", "w_body", "w_mind", "w_will", "formula_hint")
     )
     techniques = list(
-        Technique.objects.filter(adventure=adventure)
+        Technique.objects.filter(system__adventure=adventure)
         .order_by("title")
         .values(
             "id",
@@ -231,14 +231,14 @@ def _build_card_update_prompt(
         )
     )
     character_systems = list(
-        CharacterSystem.objects.filter(adventure=adventure, character_id__in=party_character_ids)
+        CharacterSystem.objects.filter(
+            character__adventure=adventure, character_id__in=party_character_ids
+        )
         .order_by("id")
         .values("id", "character_id", "system_id", "level", "progress_percent", "notes")
     )
     character_techniques = list(
-        CharacterTechnique.objects.filter(
-            adventure=adventure, character_id__in=party_character_ids
-        )
+        CharacterTechnique.objects.filter(character__adventure=adventure, character_id__in=party_character_ids)
         .order_by("id")
         .values("id", "character_id", "technique_id", "notes")
     )

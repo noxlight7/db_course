@@ -156,15 +156,12 @@ class TechniqueListCreateView(AdventureTemplateMixin, generics.ListCreateAPIView
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Technique.objects.filter(adventure=self.get_adventure()).order_by("title")
+        return Technique.objects.filter(system__adventure=self.get_adventure()).order_by("title")
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context["adventure"] = self.get_adventure()
         return context
-
-    def perform_create(self, serializer):
-        serializer.save(adventure=self.get_adventure())
 
 
 class TechniqueDetailView(AdventureTemplateMixin, generics.RetrieveUpdateDestroyAPIView):
@@ -172,7 +169,7 @@ class TechniqueDetailView(AdventureTemplateMixin, generics.RetrieveUpdateDestroy
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Technique.objects.filter(adventure=self.get_adventure())
+        return Technique.objects.filter(system__adventure=self.get_adventure())
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -272,7 +269,9 @@ class CharacterSystemListCreateView(AdventureTemplateMixin, generics.ListCreateA
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return CharacterSystem.objects.filter(adventure=self.get_adventure()).order_by("id")
+        return CharacterSystem.objects.filter(
+            character__adventure=self.get_adventure()
+        ).order_by("id")
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -280,7 +279,7 @@ class CharacterSystemListCreateView(AdventureTemplateMixin, generics.ListCreateA
         return context
 
     def perform_create(self, serializer):
-        serializer.save(adventure=self.get_adventure())
+        serializer.save()
 
 
 class CharacterSystemDetailView(AdventureTemplateMixin, generics.RetrieveUpdateDestroyAPIView):
@@ -288,7 +287,7 @@ class CharacterSystemDetailView(AdventureTemplateMixin, generics.RetrieveUpdateD
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return CharacterSystem.objects.filter(adventure=self.get_adventure())
+        return CharacterSystem.objects.filter(character__adventure=self.get_adventure())
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -301,7 +300,9 @@ class CharacterTechniqueListCreateView(AdventureTemplateMixin, generics.ListCrea
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return CharacterTechnique.objects.filter(adventure=self.get_adventure()).order_by("id")
+        return CharacterTechnique.objects.filter(
+            character__adventure=self.get_adventure()
+        ).order_by("id")
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -309,7 +310,7 @@ class CharacterTechniqueListCreateView(AdventureTemplateMixin, generics.ListCrea
         return context
 
     def perform_create(self, serializer):
-        serializer.save(adventure=self.get_adventure())
+        serializer.save()
 
 
 class CharacterTechniqueDetailView(AdventureTemplateMixin, generics.RetrieveUpdateDestroyAPIView):
@@ -317,7 +318,7 @@ class CharacterTechniqueDetailView(AdventureTemplateMixin, generics.RetrieveUpda
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return CharacterTechnique.objects.filter(adventure=self.get_adventure())
+        return CharacterTechnique.objects.filter(character__adventure=self.get_adventure())
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

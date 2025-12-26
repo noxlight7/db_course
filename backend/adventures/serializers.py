@@ -379,6 +379,8 @@ class CharacterSystemSerializer(serializers.ModelSerializer):
         system = attrs.get("system", getattr(self.instance, "system", None))
         if system and system.adventure_id != adventure.id:
             raise serializers.ValidationError({"system": "Система из другого приключения."})
+        if character and system and character.adventure_id != system.adventure_id:
+            raise serializers.ValidationError({"system": "Система из другого приключения."})
         progress = attrs.get("progress_percent", getattr(self.instance, "progress_percent", 0))
         if progress < 0 or progress > 100:
             raise serializers.ValidationError(
@@ -407,7 +409,9 @@ class CharacterTechniqueSerializer(serializers.ModelSerializer):
         if character and character.adventure_id != adventure.id:
             raise serializers.ValidationError({"character": "Персонаж из другого приключения."})
         technique = attrs.get("technique", getattr(self.instance, "technique", None))
-        if technique and technique.adventure_id != adventure.id:
+        if technique and technique.system.adventure_id != adventure.id:
+            raise serializers.ValidationError({"technique": "Прием из другого приключения."})
+        if character and technique and character.adventure_id != technique.system.adventure_id:
             raise serializers.ValidationError({"technique": "Прием из другого приключения."})
         return attrs
 

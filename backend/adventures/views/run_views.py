@@ -88,7 +88,7 @@ class AdventureRunBootstrapView(AdventureRunMixin, APIView):
             SkillSystem.objects.filter(adventure=adventure).order_by("title"), many=True
         ).data
         techniques = TechniqueSerializer(
-            Technique.objects.filter(adventure=adventure).order_by("title"), many=True
+            Technique.objects.filter(system__adventure=adventure).order_by("title"), many=True
         ).data
         setup, _ = AdventureHeroSetup.objects.get_or_create(adventure=adventure)
         return Response(
@@ -184,12 +184,11 @@ class AdventureRunStartView(AdventureTemplateMixin, APIView):
                 )
 
             technique_map = {}
-            for technique in Technique.objects.filter(adventure=template).order_by("title"):
+            for technique in Technique.objects.filter(system__adventure=template).order_by("title"):
                 system = system_map.get(technique.system_id)
                 if system is None:
                     continue
                 technique_map[technique.id] = Technique.objects.create(
-                    adventure=run,
                     system=system,
                     title=technique.title,
                     description=technique.description,
@@ -246,13 +245,14 @@ class AdventureRunStartView(AdventureTemplateMixin, APIView):
                     location=location_map.get(character.location_id),
                 )
 
-            for entry in CharacterSystem.objects.filter(adventure=template).order_by("id"):
+            for entry in CharacterSystem.objects.filter(
+                character__adventure=template
+            ).order_by("id"):
                 character = character_map.get(entry.character_id)
                 system = system_map.get(entry.system_id)
                 if character is None or system is None:
                     continue
                 CharacterSystem.objects.create(
-                    adventure=run,
                     character=character,
                     system=system,
                     level=entry.level,
@@ -260,13 +260,14 @@ class AdventureRunStartView(AdventureTemplateMixin, APIView):
                     notes=entry.notes,
                 )
 
-            for entry in CharacterTechnique.objects.filter(adventure=template).order_by("id"):
+            for entry in CharacterTechnique.objects.filter(
+                character__adventure=template
+            ).order_by("id"):
                 character = character_map.get(entry.character_id)
                 technique = technique_map.get(entry.technique_id)
                 if character is None or technique is None:
                     continue
                 CharacterTechnique.objects.create(
-                    adventure=run,
                     character=character,
                     technique=technique,
                     notes=entry.notes,
@@ -346,7 +347,7 @@ class AdventureRunHeroSetupView(AdventureRunMixin, APIView):
         if technique_entries:
             for entry in technique_entries:
                 technique = Technique.objects.filter(
-                    adventure=adventure, id=entry.get("technique")
+                    system__adventure=adventure, id=entry.get("technique")
                 ).first()
                 if technique is None:
                     return Response(
@@ -415,7 +416,6 @@ class AdventureRunHeroSetupView(AdventureRunMixin, APIView):
             if validated_systems:
                 for system, entry in validated_systems:
                     CharacterSystem.objects.create(
-                        adventure=adventure,
                         character=hero,
                         system=system,
                         level=entry.get("level", 0),
@@ -426,7 +426,6 @@ class AdventureRunHeroSetupView(AdventureRunMixin, APIView):
             if validated_techniques:
                 for technique, entry in validated_techniques:
                     CharacterTechnique.objects.create(
-                        adventure=adventure,
                         character=hero,
                         technique=technique,
                         notes=entry.get("notes", ""),

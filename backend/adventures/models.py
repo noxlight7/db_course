@@ -314,7 +314,6 @@ class SkillSystem(models.Model):
 
 
 class Technique(models.Model):
-    adventure = models.ForeignKey(Adventure, on_delete=models.CASCADE, related_name="techniques")
     system = models.ForeignKey(SkillSystem, on_delete=models.CASCADE, related_name="techniques")
     title = models.TextField()
     description = models.TextField(blank=True)
@@ -341,7 +340,7 @@ class Technique(models.Model):
             ),
         ]
         indexes = [
-            models.Index(fields=["adventure", "system"], name="idx_techniques_adv_system"),
+            models.Index(fields=["system"], name="idx_techniques_system"),
             GinIndex(fields=["tags"], name="idx_techniques_tags_gin"),
         ]
 
@@ -385,7 +384,6 @@ class OtherInfo(models.Model):
 
 class CharacterSystem(models.Model):
     id = models.BigAutoField(primary_key=True)
-    adventure = models.ForeignKey(Adventure, on_delete=models.CASCADE, related_name="character_systems")
     character = models.ForeignKey(
         Character,
         on_delete=models.CASCADE,
@@ -403,7 +401,7 @@ class CharacterSystem(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["adventure", "character", "system"],
+                fields=["character", "system"],
                 name="uq_character_system",
             ),
             models.CheckConstraint(
@@ -416,27 +414,20 @@ class CharacterSystem(models.Model):
             ),
         ]
         indexes = [
-            models.Index(fields=["adventure"], name="idx_character_systems_adv"),
+            models.Index(fields=["character"], name="idx_char_systems_char"),
         ]
 
     def clean(self) -> None:
         if (
             self.character_id
-            and self.adventure_id
-            and self.character.adventure_id != self.adventure_id
+            and self.system_id
+            and self.character.adventure_id != self.system.adventure_id
         ):
-            raise ValidationError("Character adventure mismatch.")
-        if self.system_id and self.adventure_id and self.system.adventure_id != self.adventure_id:
-            raise ValidationError("System adventure mismatch.")
+            raise ValidationError("Character/system adventure mismatch.")
 
 
 class CharacterTechnique(models.Model):
     id = models.BigAutoField(primary_key=True)
-    adventure = models.ForeignKey(
-        Adventure,
-        on_delete=models.CASCADE,
-        related_name="character_techniques",
-    )
     character = models.ForeignKey(
         Character,
         on_delete=models.CASCADE,
@@ -453,23 +444,18 @@ class CharacterTechnique(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["adventure", "character", "technique"],
+                fields=["character", "technique"],
                 name="uq_character_technique",
             ),
         ]
         indexes = [
-            models.Index(fields=["adventure"], name="idx_character_techniques_adv"),
+            models.Index(fields=["character"], name="idx_char_techniques_char"),
         ]
 
     def clean(self) -> None:
-        if (
-            self.character_id
-            and self.adventure_id
-            and self.character.adventure_id != self.adventure_id
-        ):
-            raise ValidationError("Character adventure mismatch.")
-        if self.technique_id and self.adventure_id and self.technique.adventure_id != self.adventure_id:
-            raise ValidationError("Technique adventure mismatch.")
+        if self.character_id and self.technique_id:
+            if self.character.adventure_id != self.technique.system.adventure_id:
+                raise ValidationError("Character/technique adventure mismatch.")
 
 
 class CharacterFaction(models.Model):
